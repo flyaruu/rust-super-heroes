@@ -1,20 +1,8 @@
 use std::sync::Arc;
 
-use axum::{extract::State, routing::get, serve, Router};
-use serde::Serialize;
-use sqlx::{postgres::PgPoolOptions, prelude::FromRow, query_as, Database, Pool, Postgres};
-
-#[derive(FromRow, Debug, Serialize)]
-struct SqlHero {
-    id: i64,
-    level: i32,
-    name: String,
-    #[sqlx(rename = "othername")]
-    #[serde(skip_serializing_if = "String::is_empty")]
-    other_name: String,
-    picture : String,
-    powers: String,
-}
+use axum::{extract::State, routing::get, Router};
+use sqlx::{postgres::PgPoolOptions, query_as, Pool, Postgres};
+use superhero_types::heroes::SqlHero;
 
 #[derive(Clone)]
 struct HeroesState {

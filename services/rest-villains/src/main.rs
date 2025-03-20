@@ -1,20 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
-use axum::{extract::State, routing::get, serve, Router};
-use serde::Serialize;
-use sqlx::{postgres::PgPoolOptions, prelude::FromRow, query_as, Database, Pool, Postgres};
-
-#[derive(FromRow, Debug, Serialize)]
-struct SqlVillain {
-    id: i64,
-    level: i32,
-    name: String,
-    #[sqlx(rename = "othername")]
-    #[serde(skip_serializing_if = "String::is_empty")]
-    other_name: String,
-    picture : String,
-    powers: String,
-}
+use axum::{extract::State, routing::get, Router};
+use sqlx::{postgres::PgPoolOptions, query_as, Pool, Postgres};
+use superhero_types::villains::SqlVillain;
 
 #[derive(Clone)]
 struct VillainState {
@@ -37,7 +25,7 @@ async fn main() {
     };
     let app = Router::new()
         // .route("/", get(|| async { "Hello, World!" }))
-        .route("/api/villains", get(nr_of_heroes))
+        .route("/api/villains", get(all_villains))
         .with_state(state);
 
     // run our app with hyper, listening globally on port 3000
@@ -48,7 +36,7 @@ async fn main() {
 
 }
 
-async fn nr_of_heroes(State(heroes_state): State<VillainState>)->String {
+async fn all_villains(State(heroes_state): State<VillainState>)->String {
     let pool = &*heroes_state.pool;
     println!("Querying...");
     let heroes: Vec<SqlVillain> = query_as("select * from villain").fetch_all(pool).await.unwrap();
