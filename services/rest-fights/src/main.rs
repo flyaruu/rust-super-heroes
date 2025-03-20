@@ -28,7 +28,7 @@ async fn main() {
 
     let app = Router::new()
     // .route("/", get(|| async { "Hello, World!" }))
-    .route("/api/fight", get(nr_of_heroes))
+    .route("/api/fight/randomlocation", get(random_location))
     .with_state(state);
 
     // run our app with hyper, listening globally on port 3000
@@ -39,7 +39,7 @@ async fn main() {
     // location::locations_client::LocationsClient::new(inner)
 }
 
-async fn nr_of_heroes(State(heroes_state): State<FightsState>)->String {
+async fn random_location(State(heroes_state): State<FightsState>)->String {
     let client = &mut *heroes_state.client.lock().await;
     let response = client.get_random_location(RandomLocationRequest::default()).await.unwrap();
     let location = response.into_inner();

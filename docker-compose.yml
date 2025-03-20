@@ -21,6 +21,10 @@ services:
     build: services/rest-villains
     ports:
       - "3001:3000"
+  grpc-locations:
+    build: services/grpc-locations
+    ports:
+      - "50051:50051"
   heroes-db:
     image: postgres:16
     container_name: heroes-db
