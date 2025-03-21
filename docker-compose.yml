@@ -12,19 +12,22 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: super
     volumes:
       - ../../rest-fights/deploy/db-init/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js
-
   rest-heroes:
-    build: services/rest-heroes
+    image: superhero/rest-heroes
     ports:
       - "3000:3000"
   rest-villains:
-    build: services/rest-villains
+    image: superhero/rest-villains
     ports:
       - "3001:3000"
   grpc-locations:
-    build: services/grpc-locations
+    image: superhero/grpc-locations
     ports:
       - "50051:50051"
+  rest-fights:
+    image: superhero/rest-fights
+    ports:
+      - "3002:3000"
   heroes-db:
     image: postgres:16
     container_name: heroes-db
