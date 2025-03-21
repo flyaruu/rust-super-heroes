@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{extract::State, routing::get, Router};
+use axum::{extract::{Path, State}, http::StatusCode, routing::get, Router};
 use sqlx::{postgres::PgPoolOptions, query_as, Pool, Postgres};
 use superhero_types::heroes::SqlHero;
 
@@ -24,7 +24,9 @@ async fn main() {
     };
     let app = Router::new()
         // .route("/", get(|| async { "Hello, World!" }))
-        .route("/api/heroes", get(nr_of_heroes))
+        .route("/api/heroes", get(all_heroes))
+        .route("/api/heroes/random_hero", get(random_hero))
+        .route("/api/heroes/{id}", get(hero))
         .with_state(state);
 
     // run our app with hyper, listening globally on port 3000
@@ -35,9 +37,33 @@ async fn main() {
 
 }
 
-async fn nr_of_heroes(State(heroes_state): State<HeroesState>)->String {
-    let pool = &*heroes_state.pool;
-    let heroes: Vec<SqlHero> = query_as("select * from Hero").fetch_all(pool).await.unwrap();
+// Path(user_id): Path<Uuid>
+
+async fn hero(Path(id): Path<i64>, State(heroes_state): State<HeroesState>)->(StatusCode,String) {
+    println!("User: {}",id);
+    let hero: Option<SqlHero> = query_as("select * from Hero where id=$1").bind(id)
+        .fetch_optional(&*heroes_state.pool).await
+        .unwrap();
+    if let Some(hero) = hero {
+        (StatusCode::OK,serde_json::to_string(&hero).unwrap())
+    } else {
+        (StatusCode::NOT_FOUND,"Not found".to_owned())
+    }
+
+}
+
+async fn random_hero(State(heroes_state): State<HeroesState>)->(StatusCode,String) {
+    let hero: Option<SqlHero> = query_as("select * from Hero order by random() limit 1")
+        .fetch_optional(&*heroes_state.pool).await
+        .unwrap();
+    if let Some(hero) = hero {
+        (StatusCode::OK,serde_json::to_string(&hero).unwrap())
+    } else {
+        (StatusCode::NOT_FOUND,"Not found".to_owned())
+    }
+}
+
+async fn all_heroes(State(heroes_state): State<HeroesState>)->String {
+    let heroes: Vec<SqlHero> = query_as("select * from Hero").fetch_all(&*heroes_state.pool).await.unwrap();
     serde_json::to_string(&heroes).unwrap()
-    // heroes.len().to_string()
 }
