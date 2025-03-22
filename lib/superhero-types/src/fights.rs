@@ -2,11 +2,10 @@ use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Timestamp;
 
 use crate::{
     heroes::SqlHero,
-    location::{self, SqlLocation},
+    location::SqlLocation,
     villains::SqlVillain,
 };
 
