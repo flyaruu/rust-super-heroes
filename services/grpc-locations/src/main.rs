@@ -2,6 +2,7 @@ use std::result::Result;
 
 use location::{locations_server::{Locations, LocationsServer}, DeleteAllLocationsResponse, HelloReply, LocationType, LocationsList};
 use sqlx::{prelude::FromRow, query_as, MySql, MySqlPool, Pool};
+use superhero_types::location::SqlLocation;
 use tonic::{transport::Server, Request, Response, Status};
 
 pub mod location {
@@ -57,47 +58,33 @@ impl Locations for MyLocations {
 
 }
 
-#[derive(sqlx::Type,Debug)]
-enum SqlLocationType {
-    CITY,PLANET, PLACE, ISLAND, COUNTRY, MOON
-}
-
-
-#[derive(FromRow, Debug)]
-struct SqlLocation {
-    id: i64,
-    description: String,
-    name: String,
-    picture: String,
-    r#type: String, // TODO use enum
-}
-
 impl From<SqlLocation> for location::Location {
     fn from(value: SqlLocation) -> Self {
-        let location_type: i32 = match value.r#type.to_lowercase().as_str() {
-            "city" => LocationType::City.into(),
-            "planet" => LocationType::Planet.into(),
-            "place" => LocationType::Place.into(),
-            "island" => LocationType::Island.into(),
-            "country" => LocationType::Country.into(),
-            "moon" => LocationType::Moon.into(),
-            _ => panic!("Unexpected type: {}",value.r#type)
-        };
-        Self { name: value.name, description: value.description, picture: value.picture, r#type: location_type }
+        // let location_type: i32 = match value.r#type.to_lowercase().as_str() {
+        //     "city" => LocationType::City.into(),
+        //     "planet" => LocationType::Planet.into(),
+        //     "place" => LocationType::Place.into(),
+        //     "island" => LocationType::Island.into(),
+        //     "country" => LocationType::Country.into(),
+        //     "moon" => LocationType::Moon.into(),
+        //     _ => panic!("Unexpected type: {}",value.r#type)
+        // };
+        // TODO deal with the type
+        Self { name: value.name, description: value.description, picture: value.picture, r#type: 0 }
     }
 }
 
 impl From<location::Location> for SqlLocation {
     fn from(value: location::Location) -> Self {
-        let sql_type = match value.r#type() {
-            LocationType::Planet => "planet",
-            LocationType::City => "city",
-            LocationType::Place => "place",
-            LocationType::Island => "island",
-            LocationType::Country => "country",
-            LocationType::Moon => "moon",
-        };
-        SqlLocation { id: 0, description: value.description, name: value.name, picture: value.picture, r#type: sql_type.to_owned() }
+        // let sql_type = match value.r#type() {
+        //     LocationType::Planet => "planet",
+        //     LocationType::City => "city",
+        //     LocationType::Place => "place",
+        //     LocationType::Island => "island",
+        //     LocationType::Country => "country",
+        //     LocationType::Moon => "moon",
+        // };
+        SqlLocation { description: value.description, name: value.name, picture: value.picture }
     }
 }
 

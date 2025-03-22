@@ -8,6 +8,7 @@ prost = { version = "0.13.5", features = ["prost-derive"] }
 sqlx = { version = "0.8.3", features = ["mysql", "runtime-tokio"] }
 tokio = { version = "1.44.1", features = ["full"] }
 tonic = "0.12.3"
+superhero-types = { path = "../../lib/superhero-types"}
 
 [build-dependencies]
 tonic-build = "0.12.3"

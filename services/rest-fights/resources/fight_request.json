@@ -1,0 +1,19 @@
+{
+    "hero": {
+        "name": "Mirajane Strauss",
+        "level": 1000,
+        "picture": "https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/mirajane-strauss--1917005896179432425.jpg",
+        "powers": "Absorption, Acrobatics, Agility, Flight, Magic, Master Martial Artist, Reflexes, Shapeshifting"
+    },
+    "villain": {
+        "name": "Void Ghidorah",
+        "level": 16000000,
+        "picture": "https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/void-ghidorah-(full-embodiment-_-true-form)--3440949461508272390.jpg",
+        "powers": "Absorption, Anti-Gravity, Avatar Creation, Black Hole Manipulation, Dimensional Awareness, Dimensional Travel, Energy Absorption, Energy Armor, Energy Beams, Energy Blasts, Energy Embodiment, Energy Manipulation, Energy Resistance, Existence Erasure Resistance, Flight, Force Fields, Godly Physiology, Gravity Control, Higher Dimensional Manipulation, Immortality, Reality Warping Resistance, Spaceflight, Time Manipulation, Time Manipulation Resistance"
+    },
+    "location": {
+        "name": "Endor",
+        "description": "Endor is a forested moon orbiting the gas giant planet of Endor in the Outer Rim Territories. The Ewok village, the Death Star shield generator bunker, and the lush forest terrain. Endor is the location of the Battle of Endor, a critical event in the Star Wars saga, where the Rebel Alliance defeated the Galactic Empire.",
+        "picture": "https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/locations/endor.jpg"
+    }
+}
