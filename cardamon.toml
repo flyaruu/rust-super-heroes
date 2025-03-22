@@ -1,0 +1,29 @@
+#[cpu]
+#name = "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz"
+#curve = [171.2,0.0354,36.89,-10.13]
+[cpu]
+name = "Apple M4 Pro"
+curve = [30.508760345993128,0.0730308567638932,20.451103066868207,-5.08379885619235]
+
+
+#"event-statistics-java21" "fights-kafka" "rest-narration-java21" "apicurio", "apicurio", "ui-super-heroes"
+[[process]]
+name = "fights-rust"
+up = "docker compose up --force-recreate -d"
+down = "docker compose down"
+redirect.to = "file"
+process.type = "docker"
+process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "rest-fights", "rest-heroes", "rest-villains", "grpc-locations"]
+startup_grace = "5s"
+
+[[scenario]]
+name = "k6-rust"
+desc = "Load test for 60s"
+command = "k6 run k6.js"
+iterations = 3
+processes = ["fights-rust"]
+
+[[observation]]
+name = "rust"
+scenarios = ["k6-rust"]
+
