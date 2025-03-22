@@ -9,6 +9,6 @@ pub struct SqlVillain {
     #[sqlx(rename = "othername")]
     // #[serde(skip_serializing_if = "String::is_empty")]
     pub other_name: Option<String>,
-    pub picture : String,
+    pub picture: String,
     pub powers: String,
 }

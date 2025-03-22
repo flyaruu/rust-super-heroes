@@ -1,4 +1,4 @@
-pub mod heroes;
-pub mod villains;
-pub mod location;
 pub mod fights;
+pub mod heroes;
+pub mod location;
+pub mod villains;

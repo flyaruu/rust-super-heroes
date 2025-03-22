@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
-#[derive(sqlx::Type,Debug)]
+#[derive(sqlx::Type, Debug)]
 pub enum SqlLocationType {
-    CITY,PLANET, PLACE, ISLAND, COUNTRY, MOON
+    CITY,
+    PLANET,
+    PLACE,
+    ISLAND,
+    COUNTRY,
+    MOON,
 }
-
 
 #[derive(FromRow, Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SqlLocation {

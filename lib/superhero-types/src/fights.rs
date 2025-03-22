@@ -4,8 +4,11 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Timestamp;
 
-use crate::{heroes::SqlHero, location::{self, SqlLocation}, villains::SqlVillain};
-
+use crate::{
+    heroes::SqlHero,
+    location::{self, SqlLocation},
+    villains::SqlVillain,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fighters {
@@ -44,7 +47,12 @@ pub enum Winner {
 }
 
 impl FightResult {
-    pub fn new(winner: Winner, hero: &SqlHero, villain: &SqlVillain, location: &SqlLocation)->Self {
+    pub fn new(
+        winner: Winner,
+        hero: &SqlHero,
+        villain: &SqlVillain,
+        location: &SqlLocation,
+    ) -> Self {
         let id = uuid::Uuid::new_v4();
         let now = SystemTime::now();
         let now: DateTime<Utc> = now.into();
@@ -91,7 +99,21 @@ impl FightResult {
             Winner::Heroes => "villains",
         };
 
-        FightResult { id: id.to_string(), fight_date: now, winner_name, winner_level, winner_powers, winner_picture, loser_name, loser_level, loser_powers, loser_picture, winner_team: winner_team.to_owned(), loser_team: loser_team.to_owned(), location: location.clone() }
+        FightResult {
+            id: id.to_string(),
+            fight_date: now,
+            winner_name,
+            winner_level,
+            winner_powers,
+            winner_picture,
+            loser_name,
+            loser_level,
+            loser_powers,
+            loser_picture,
+            winner_team: winner_team.to_owned(),
+            loser_team: loser_team.to_owned(),
+            location: location.clone(),
+        }
     }
 }
 // {
@@ -113,4 +135,3 @@ impl FightResult {
 //         "picture": "https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/locations/tyr.jpg"
 //     }
 // }
-
