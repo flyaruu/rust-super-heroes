@@ -14,7 +14,7 @@ down = "docker compose down"
 redirect.to = "file"
 process.type = "docker"
 process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "rest-fights", "rest-heroes", "rest-villains", "grpc-locations"]
-startup_grace = "5s"
+startup_grace = "20s"
 
 [[scenario]]
 name = "k6-rust"

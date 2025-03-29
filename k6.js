@@ -1,4 +1,5 @@
 import http from 'k6/http';
+import { check } from 'k6';
 
 export const options = {
     vus: 100,
@@ -6,22 +7,42 @@ export const options = {
 };
 
 export default() => {
-
     const json_post_header = {
         headers: {
           'Content-Type': 'application/json',
         },
     };
-    
-    var response_body = JSON.parse(http.get("http://localhost:8082/api/fights/randomfighters").body);
+    var response = http.get("http://localhost:8082/api/fights/randomfighters");
+    check(response, {
+        'random fighters status is 200': (r) => r.status === 200,
+      });
+    var response_body = JSON.parse(response.body);
+
     var hero = response_body.hero;
     var villain = response_body.villain;
-    var location = JSON.parse(http.get("http://localhost:8082/api/fights/randomlocation").body);
-    // console.log("Loqqq: "+ JSON.stringify(location));
+    check(location, {
+        'hero is not fallback': (r) => !hero.name.toLowerCase().includes("fallback"),
+        'villain is not fallback': (r) => !villain.name.toLowerCase().includes("fallback")
+    })
+
+    var location_response = http.get("http://localhost:8082/api/fights/randomlocation");
+    check(response, {
+        'location status is 200': (r) => r.status === 200,
+      });
+    var location = JSON.parse(location_response.body);
+    check(location, {
+        'location is not fallback': (r) => !location.name.toLowerCase().includes("fallback")
+    })
     var fight_request = { hero: hero, villain: villain, location: location};
-    // console.log("Reqqq: "+ JSON.stringify(fight_request));
-    var response = http.post("http://localhost:8082/api/fights", JSON.stringify(fight_request), json_post_header).body;
-    // console.log("Unparsed: +"+JSON.stringify(response));
-    var fight_result = JSON.parse(response);
+    var fight_response = http.post("http://localhost:8082/api/fights", JSON.stringify(fight_request), json_post_header);
+    // console.log(fight_response);
+    check( fight_response, {
+      'fight result is 200': (r) => r.status === 200
+    })
+    var fight_result = JSON.parse(fight_response.body);
+    // console.log("===============");
+
     // console.log(fight_result);
+
+    console.log(fight_result.winnerName);
 }
