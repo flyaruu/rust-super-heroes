@@ -25,7 +25,7 @@ struct FightsState {
     // LocahtionsClient is clone, so just do that?
     locations_client: Arc<Mutex<LocationsClient<Channel>>>,
     http_client: reqwest::Client,
-    mongo_client: mongodb::Client,
+    mongo_collection: Collection<FightResult>,
     // rng: ThreadRng,
 }
 
@@ -33,13 +33,15 @@ struct FightsState {
 async fn main() {
     env_logger::init();
 
-    let mongodb_url = "mongodb://super:super@localhost/?retryWrites=true";
+    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true";
 
     let client_options = ClientOptions::parse(mongodb_url).await.unwrap();
     // let client = Client::with_options(client_options).unwrap();
     let mongo_client = mongodb::Client::with_options(client_options).unwrap();
+    let collection: Collection<FightResult> = mongo_client.database("fights").collection("fight_collection");
+
     let locations_client: LocationsClient<Channel> = loop {
-        match LocationsClient::connect("http://localhost:50051").await {
+        match LocationsClient::connect("http://grpc-locations:50051").await {
             Ok(client) => break client,
             Err(e) => {
                 info!("Not up yet, waiting...: {:?}", e);
@@ -52,7 +54,7 @@ async fn main() {
     let state = FightsState {
         locations_client: Arc::new(Mutex::new(locations_client)),
         http_client: client,
-        mongo_client: mongo_client,
+        mongo_collection: collection,
     };
     let app = Router::new()
         .route("/api/fights/randomlocation", get(random_location))
@@ -71,8 +73,7 @@ async fn post_fight(
     Json(request): Json<FightRequest>,
 ) -> Json<FightResult> {
     let result: FightResult = execute_fight(&request, &fight_state).await;
-    let a: Collection<FightResult> = fight_state.mongo_client.database("fights").collection("fight_collection");
-    a.insert_one(&result).await.unwrap();
+    fight_state.mongo_collection.insert_one(&result).await.unwrap();
     Json(result)
 }
 

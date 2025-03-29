@@ -13,7 +13,7 @@ up = "docker compose up --force-recreate -d"
 down = "docker compose down"
 redirect.to = "file"
 process.type = "docker"
-process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "rest-fights", "rest-heroes", "rest-villains", "grpc-locations"]
+process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "rest-fights", "rest-heroes", "rest-villains", "grpc-locations", "fights-db"]
 startup_grace = "20s"
 
 [[scenario]]

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::{
     extract::{Path, State}, http::StatusCode, routing::get, Json, Router
@@ -16,6 +16,7 @@ async fn main() {
     println!("Main");
 
     let pool = PgPoolOptions::new()
+        .acquire_timeout(Duration::from_millis(800))
         .connect("postgres://superman:superman@heroes-db:5432/heroes_database")
         .await
         .unwrap();

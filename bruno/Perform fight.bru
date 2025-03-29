@@ -1,0 +1,15 @@
+meta {
+  name: Perform fight
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8082/api/fights
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {"hero":{"level":118000,"name":"Gemini Saga","other_name":"","picture":"https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/gemini-saga-53651122925158886.jpg","powers":"Cold Resistance, Energy Blasts, Enhanced Senses, Explosion Manipulation, Extrasensory Perception, Flight, Heat Generation, Master Martial Artist, Molecular Dissipation, Non-Physical Interaction, Quantum Manipulation, Soul Manipulation, Absorption, Acrobatics, Agility, Aura, Force Fields, Pocket Dimensions, Precognition, Pressure Points, Probability Manipulation, Reactive Power Level, Regeneration, Spatial Manipulation, Statistics Amplification, Telekinesis, Telepathy"},"villain":{"level":134,"name":"Vayne","other_name":"Shauna Vayne","picture":"https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/shauna-vayne-849469911022914728.jpg","powers":"Acrobatics, Intelligence, Marksmanship, Power Nullifier, Vision - Night, Cold Resistance, Dexterity, Durability Negation, Invisibility, Magic Resistance, Master Martial Artist, Non-Physical Interaction, Reflexes, Swordsmanship, Weapon-based Powers, Indomitable Will, Invulnerability"},"location":{"name":"Gotham City","description":"An American city rife with corruption and crime, the home of its iconic protector Batman.","picture":"https://raw.githubusercontent.com/quarkusio/quarkus-super-heroes/characterdata/images/locations/gotham_city.jpg","type":0}}
+}
