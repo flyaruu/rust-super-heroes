@@ -10,12 +10,14 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Fighters {
     pub hero: SqlHero,
     pub villain: SqlVillain,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FightRequest {
     pub hero: SqlHero,
     pub villain: SqlVillain,
@@ -23,6 +25,7 @@ pub struct FightRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct FightResult {
     id: String,
     fight_date: String, // use timestamp data structure?
