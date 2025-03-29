@@ -9,14 +9,12 @@ use axum::{
     extract::State,
     routing::{get, post},
 };
-use location::{RandomLocationRequest, locations_client::LocationsClient};
+use location::{locations_client::LocationsClient, Location, RandomLocationRequest};
 use log::info;
 use rand::RngCore;
 use reqwest::Client;
 use superhero_types::{
-    fights::{FightRequest, FightResult, Fighters, Winner},
-    heroes::SqlHero,
-    villains::SqlVillain,
+    fights::{FightRequest, FightResult, Fighters, Winner}, heroes::SqlHero, villains::SqlVillain
 };
 use tokio::{sync::Mutex, time::sleep};
 use tonic::transport::Channel;
@@ -62,10 +60,9 @@ async fn main() {
 async fn post_fight(
     State(fight_state): State<FightsState>,
     Json(request): Json<FightRequest>,
-) -> String {
+) -> Json<FightResult> {
     let result: FightResult = execute_fight(&request, &fight_state).await;
-    let serialized = serde_json::to_string(&result).unwrap();
-    serialized
+    Json(result)
 }
 
 async fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> FightResult {
@@ -78,47 +75,44 @@ async fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> Fi
     FightResult::new(winner, &request.hero, &request.villain, &request.location)
 }
 
-async fn random_location(State(fight_state): State<FightsState>) -> String {
+async fn random_location(State(fight_state): State<FightsState>) -> Json<Location> {
     let client = &mut *fight_state.locations_client.lock().await;
     //.get_or_init(|| LocationsClient::connect("http://grpc-locations:50051"));
     let response = client
         .get_random_location(RandomLocationRequest::default())
         .await
         .unwrap();
-    let location = response.into_inner();
-    serde_json::to_string(&location).unwrap()
+    Json(response.into_inner())
 }
 
-async fn random_fighters(State(fight_state): State<FightsState>) -> String {
+async fn random_fighters(State(fight_state): State<FightsState>) -> Json<Fighters> {
     let fighters = Fighters {
         hero: random_hero(&fight_state.http_client).await,
         villain: random_villain(&fight_state.http_client).await,
     };
-    serde_json::to_string_pretty(&fighters).unwrap()
+    Json(fighters)
 }
 
 async fn random_hero(client: &Client) -> SqlHero {
-    let body = client
+    client
         .get("http://rest-heroes:3000/api/heroes/random_hero")
         .send()
         .await
         .unwrap()
-        .text()
+        .json()
         .await
-        .unwrap();
-    serde_json::from_str(&body).unwrap()
+        .unwrap()
 }
 
 async fn random_villain(client: &Client) -> SqlVillain {
-    let body = client
+    client
         .get("http://rest-villains:3000/api/villains/random_villain")
         .send()
         .await
         .unwrap()
-        .text()
+        .json()
         .await
-        .unwrap();
-    serde_json::from_str(&body).unwrap()
+        .unwrap()
 }
 
 #[cfg(test)]

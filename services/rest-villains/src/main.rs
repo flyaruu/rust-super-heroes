@@ -1,10 +1,7 @@
 use std::{sync::Arc, time::Duration};
 
 use axum::{
-    Router,
-    extract::{Path, State},
-    http::StatusCode,
-    routing::get,
+    extract::{Path, State}, http::StatusCode, routing::get, Json, Router
 };
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions, query_as};
 use superhero_types::villains::SqlVillain;
@@ -43,7 +40,7 @@ async fn main() {
 async fn villain(
     Path(id): Path<i64>,
     State(villain_state): State<VillainState>,
-) -> (StatusCode, String) {
+) -> (StatusCode, Json<Option<SqlVillain>>) {
     println!("User: {}", id);
     let villain: Option<SqlVillain> = query_as("select * from villain where id=$1")
         .bind(id)
@@ -51,29 +48,28 @@ async fn villain(
         .await
         .unwrap();
     if let Some(villain) = villain {
-        (StatusCode::OK, serde_json::to_string(&villain).unwrap())
+        (StatusCode::OK, Json(Some(villain)))
     } else {
-        (StatusCode::NOT_FOUND, "Not found".to_owned())
+        (StatusCode::NOT_FOUND,Json(None))
     }
 }
 
-async fn random_villain(State(villain_state): State<VillainState>) -> (StatusCode, String) {
+async fn random_villain(State(villain_state): State<VillainState>) -> (StatusCode,Json<Option<SqlVillain>>) {
     let villain: Option<SqlVillain> = query_as("select * from villain order by random() limit 1")
         .fetch_optional(&*villain_state.pool)
         .await
         .unwrap();
     if let Some(villain) = villain {
-        (StatusCode::OK, serde_json::to_string(&villain).unwrap())
+        (StatusCode::OK, Json(Some(villain)))
     } else {
-        (StatusCode::NOT_FOUND, "Not found".to_owned())
+        (StatusCode::NOT_FOUND, Json(None))
     }
 }
 
-async fn all_villains(State(villain_state): State<VillainState>) -> String {
+async fn all_villains(State(villain_state): State<VillainState>) -> Json<Vec<SqlVillain>> {
     let pool = &*villain_state.pool;
-    let villain: Vec<SqlVillain> = query_as("select * from villain")
+    Json(query_as("select * from villain")
         .fetch_all(pool)
         .await
-        .unwrap();
-    serde_json::to_string(&villain).unwrap()
+        .unwrap())
 }

@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
-    extract::{Path, State},
-    http::StatusCode,
-    routing::get,
+    extract::{Path, State}, http::StatusCode, routing::get, Json, Router
 };
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions, query_as};
 use superhero_types::heroes::SqlHero;
@@ -40,7 +37,7 @@ async fn main() {
 async fn hero(
     Path(id): Path<i64>,
     State(heroes_state): State<HeroesState>,
-) -> (StatusCode, String) {
+) -> (StatusCode, Json<Option<SqlHero>>) {
     println!("User: {}", id);
     let hero: Option<SqlHero> = query_as("select * from Hero where id=$1")
         .bind(id)
@@ -48,28 +45,27 @@ async fn hero(
         .await
         .unwrap();
     if let Some(hero) = hero {
-        (StatusCode::OK, serde_json::to_string(&hero).unwrap())
+        (StatusCode::OK, Json(Some(hero)))
     } else {
-        (StatusCode::NOT_FOUND, "Not found".to_owned())
+        (StatusCode::NOT_FOUND, Json(None))
     }
 }
 
-async fn random_hero(State(heroes_state): State<HeroesState>) -> (StatusCode, String) {
+async fn random_hero(State(heroes_state): State<HeroesState>) -> (StatusCode, Json<Option<SqlHero>>) {
     let hero: Option<SqlHero> = query_as("select * from Hero order by random() limit 1")
         .fetch_optional(&*heroes_state.pool)
         .await
         .unwrap();
     if let Some(hero) = hero {
-        (StatusCode::OK, serde_json::to_string(&hero).unwrap())
+        (StatusCode::OK, Json(Some(hero)))
     } else {
-        (StatusCode::NOT_FOUND, "Not found".to_owned())
+        (StatusCode::NOT_FOUND, Json(None))
     }
 }
 
-async fn all_heroes(State(heroes_state): State<HeroesState>) -> String {
-    let heroes: Vec<SqlHero> = query_as("select * from Hero")
+async fn all_heroes(State(heroes_state): State<HeroesState>) -> Json<Vec<SqlHero>> {
+    Json(query_as("select * from Hero")
         .fetch_all(&*heroes_state.pool)
         .await
-        .unwrap();
-    serde_json::to_string(&heroes).unwrap()
+        .unwrap())
 }
