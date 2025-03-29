@@ -138,8 +138,15 @@ async fn main() {
         .serve(addr)
         .await
         .unwrap();
-    // let a = tonic::server::builder();
-
-    // let items: Vec<SqlLocation> = query_as("select * from locations").fetch_all(&pool).await.unwrap();
-    // println!("Hello, world: {:?}",items);
 }
+
+// async fn query_locations()->Vec<SqlLocation> {
+//     let pool = MySqlPool::connect("mysql://locations:locations@locations-db/locations_database")
+//         .await
+//         .unwrap();
+//     let all: Vec<SqlLocation> = query_as("select * from locations order by rand() limit 1")
+//         .fetch_all(&pool)
+//         .await
+//         .unwrap();
+//     all
+// }
