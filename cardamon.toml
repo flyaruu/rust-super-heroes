@@ -17,13 +17,38 @@ process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "
 startup_grace = "20s"
 
 [[scenario]]
-name = "k6-rust"
-desc = "Load test for 60s"
+name = "k6-rust-high"
+desc = "High test for 60s"
+command = "k6 run high.js"
+iterations = 3
+processes = ["fights-rust"]
+
+[[scenario]]
+name = "k6-rust-low"
+desc = "Low load test."
+command = "k6 run low.js"
+iterations = 3
+processes = ["fights-rust"]
+
+[[scenario]]
+name = "k6-rust-none"
+desc = "No load test."
+command = "k6 run none.js"
+iterations = 3
+processes = ["fights-rust"]
+
+[[scenario]]
+name = "k6-rust-max"
+desc = "No load test."
 command = "k6 run k6.js"
 iterations = 3
 processes = ["fights-rust"]
 
+
 [[observation]]
 name = "rust"
-scenarios = ["k6-rust"]
+scenarios = ["k6-rust-low","k6-rust-high","k6-rust-none"]
 
+[[observation]]
+name = "rust-max"
+scenarios = ["k6-rust-max"]
