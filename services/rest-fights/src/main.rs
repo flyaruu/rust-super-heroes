@@ -33,7 +33,7 @@ struct FightsState {
 async fn main() {
     env_logger::init();
 
-    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true";
+    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=20";
 
     let client_options = ClientOptions::parse(mongodb_url).await.unwrap();
     // let client = Client::with_options(client_options).unwrap();

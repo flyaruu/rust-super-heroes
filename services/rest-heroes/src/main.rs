@@ -16,7 +16,7 @@ async fn main() {
     println!("Main");
 
     let pool = PgPoolOptions::new()
-        .acquire_timeout(Duration::from_millis(800))
+        .max_connections(30)
         .connect("postgres://superman:superman@heroes-db:5432/heroes_database")
         .await
         .unwrap();

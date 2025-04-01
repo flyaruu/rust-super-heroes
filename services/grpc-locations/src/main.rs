@@ -4,7 +4,7 @@ use location::{
     DeleteAllLocationsResponse, HelloReply, LocationsList,
     locations_server::{Locations, LocationsServer},
 };
-use sqlx::{MySql, MySqlPool, Pool, query_as};
+use sqlx::{mysql::MySqlPoolOptions, query_as, MySql, Pool};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
 
@@ -127,7 +127,9 @@ impl From<location::Location> for SqlLocation {
 
 #[tokio::main]
 async fn main() {
-    let pool = MySqlPool::connect("mysql://locations:locations@locations-db/locations_database")
+    let pool = MySqlPoolOptions::new()
+        .max_connections(30)
+        .connect("mysql://locations:locations@locations-db/locations_database")
         .await
         .unwrap();
     let core = MyLocations { pool: pool };
