@@ -40,7 +40,7 @@ processes = ["fights-rust"]
 [[scenario]]
 name = "k6-rust-max"
 desc = "No load test."
-command = "k6 run k6.js"
+command = "k6 run max.js"
 iterations = 3
 processes = ["fights-rust"]
 
