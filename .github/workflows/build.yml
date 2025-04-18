@@ -11,8 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Build the Docker grpc-locations
+      run: docker build . --file Dockerfile --tag superhero/grpc-locations:$(date +%s) --tag superhero/grpc-locations:latest
+    - name: Build the Docker rest-heroes
+      run: docker build . --file Dockerfile --tag superhero/rest-heroes:$(date +%s) --tag superhero/rest-heroes:latest
+    - name: Build the Docker rest-villains
+      run: docker build . --file Dockerfile --tag superhero/rest-villains:$(date +%s) --tag superhero/rest-villains:latest
+    - name: Build the Docker rest-fights
+      run: docker build . --file Dockerfile --tag superhero/rest-fights:$(date +%s) --tag superhero/rest-fights:latest
   cardamon:
     runs-on: ubuntu-latest
     services:
