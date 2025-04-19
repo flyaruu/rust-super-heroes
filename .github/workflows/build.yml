@@ -24,7 +24,6 @@ jobs:
     services:
       docker:
         image: flyaruu/cardamon_cicd:0.1
-        privileged: true
         options: --privileged --shm-size=2g
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock:ro
