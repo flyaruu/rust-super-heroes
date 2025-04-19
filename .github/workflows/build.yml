@@ -24,18 +24,22 @@ jobs:
     services:
       docker:
         image: flyaruu/cardamon_cicd:0.1
+        privileged: true
         options: --privileged --shm-size=2g
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock:ro
-    container:
-      image: flyaruu/cardamon_cicd:0.1
+    # container:
+    #   image: flyaruu/cardamon_cicd:0.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Test Docker
         run: |
+          pwd
+          ls -l
           docker version
           docker info
+
       - name: Cardamon
         run: |
           cardamon run rust
