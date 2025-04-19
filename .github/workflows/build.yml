@@ -21,14 +21,17 @@ jobs:
       run: docker build . --file Dockerfile --tag superhero/rest-fights:$(date +%s) --tag superhero/rest-fights:latest
   cardamon:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: flyaruu/cardamon_cicd:0.1
-        options: --privileged --shm-size=2g
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock:ro
-    # container:
-    #   image: flyaruu/cardamon_cicd:0.1
+    # services:
+    #   docker:
+    #     image: flyaruu/cardamon_cicd:0.1
+    #     options: --privileged --shm-size=2g
+    #     volumes:
+    #       - /var/run/docker.sock:/var/run/docker.sock:ro
+    container:
+      image: flyaruu/cardamon_cicd:0.1
+      options: --privileged --shm-size=2g
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
     steps:
       - name: Checkout
         uses: actions/checkout@v4
