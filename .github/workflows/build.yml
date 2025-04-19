@@ -28,10 +28,10 @@ jobs:
     #     volumes:
     #       - /var/run/docker.sock:/var/run/docker.sock:ro
     container:
-      image: flyaruu/cardamon_cicd:0.1
+      image: flyaruu/cardamon_cicd:0.2
       options: --privileged --shm-size=2g
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock:ro
+      # volumes:
+      #   - /var/run/docker.sock:/var/run/docker.sock:ro
     steps:
       - name: Checkout
         uses: actions/checkout@v4
