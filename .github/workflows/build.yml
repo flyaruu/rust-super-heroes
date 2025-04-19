@@ -21,6 +21,7 @@ jobs:
       run: docker build . --file Dockerfile --tag superhero/rest-fights:$(date +%s) --tag superhero/rest-fights:latest
   cardamon:
     runs-on: ubuntu-latest
+    needs: build
     # services:
     #   docker:
     #     image: flyaruu/cardamon_cicd:0.1
