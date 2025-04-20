@@ -21,7 +21,7 @@ jobs:
           docker compose build
       - name: Cardamon
         run: |
-          cardamon run quick
+          cardamon run rust
       - name: Log
         run: |
           cat .stderr
