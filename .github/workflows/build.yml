@@ -5,78 +5,11 @@ on:
   push:
     branches: 
       - main
+      - docker-compose-build
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-        options: >-
-          --name registry
-          -e REGISTRY_STORAGE_DELETE_ENABLED=true    
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker grpc-locations
-      run: |
-        docker build . --file Dockerfile --tag superhero/grpc-locations:$(date +%s) --tag superhero/grpc-locations:latest
-        docker push localhost:5000/superhero/grpc-locations:latest
-    - name: Build the Docker rest-heroes
-      run: |
-        docker build . --file Dockerfile --tag superhero/rest-heroes:$(date +%s) --tag superhero/rest-heroes:latest
-        docker push localhost:5000/superhero/rest-heroes:latest
-    - name: Build the Docker rest-villains
-      run: |
-        docker build . --file Dockerfile --tag superhero/rest-villains:$(date +%s) --tag superhero/rest-villains:latest
-        docker push localhost:5000/superhero/rest-villains:latest
-    - name: Build the Docker rest-fights
-      run: |
-        docker build . --file Dockerfile --tag superhero/rest-fights:$(date +%s) --tag superhero/rest-fights:latest
-        docker push localhost:5000/superhero/rest-fights:latest
-    - name: Save image as tarball
-      run: |
-        docker save localhost:5000/superhero/grpc-locations:latest -o grpc-locations.tar
-        docker save localhost:5000/superhero/rest-heroes:latest -o rest-heroes.tar
-        docker save localhost:5000/superhero/rest-villains:latest -o rest-villains.tar
-        docker save localhost:5000/superhero/rest-fights:latest -o rest-fights.tar
-
-    - name: Upload locations artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: grpc-locations
-        path: grpc-locations.tar
-
-    - name: Upload locations artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: rest-heroes
-        path: rest-heroes.tar
-  
-    - name: Upload locations artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: rest-villains
-        path: rest-villains.tar
-
-    - name: Upload locations artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: rest-fights
-        path: rest-fights.tar
-
   cardamon:
     runs-on: ubuntu-latest
-    needs: build
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-        options: >-
-          --name registry
-          -e REGISTRY_STORAGE_DELETE_ENABLED=true
     # services:
     #   docker:
     #     image: flyaruu/cardamon_cicd:0.1
@@ -108,15 +41,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: rest-fights
-    
-  
-          
       - name: Test Docker
         run: |
           pwd
           ls -l
           docker version
           docker info
+      - name: Build docker compose
+        run: |
+          docker compose build
+    
       # - name: Pull compose
       #   run: |
       #     docker compose pull
