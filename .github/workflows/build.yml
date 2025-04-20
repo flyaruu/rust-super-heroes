@@ -42,11 +42,16 @@ jobs:
           ls -l
           docker version
           docker info
+      - name: Pull compose
+        run: |
+          docker compose pull
 
       - name: Cardamon
         run: |
-          cardamon run rust
-  
+          cardamon run quick
+      - name: Log
+        run: |
+          echo .stderr
 
   # push_container:
   #   runs-on: ubuntu-latest

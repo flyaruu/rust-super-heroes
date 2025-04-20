@@ -44,6 +44,17 @@ command = "k6 run max.js"
 iterations = 3
 processes = ["fights-rust"]
 
+[[scenario]]
+name = "k6-rust-quick"
+desc = "Low load test."
+command = "k6 run low.js"
+iterations = 1
+processes = ["fights-rust"]
+
+[[observation]]
+name = "quick"
+scenarios = ["k6-rust-quick"]
+
 
 [[observation]]
 name = "rust"
