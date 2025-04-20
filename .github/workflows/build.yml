@@ -51,7 +51,7 @@ jobs:
           cardamon run quick
       - name: Log
         run: |
-          echo .stderr
+          cat .stderr
 
   # push_container:
   #   runs-on: ubuntu-latest
