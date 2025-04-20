@@ -25,22 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: grpc-locations
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: rest-heroes
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: rest-villains
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: rest-fights
       - name: Test Docker
         run: |
           pwd
@@ -51,10 +35,6 @@ jobs:
         run: |
           docker compose build
     
-      # - name: Pull compose
-      #   run: |
-      #     docker compose pull
-
       - name: Cardamon
         run: |
           cardamon run quick
