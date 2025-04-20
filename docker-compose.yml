@@ -13,19 +13,19 @@ services:
     volumes:
       - ${PWD}/database/fights-db/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js
   rest-heroes:
-    image: superhero/rest-heroes
+    image: superhero/rest-heroes:latest
     ports:
       - "8080:3000"
   rest-villains:
-    image: superhero/rest-villains
+    image: superhero/rest-villains:latest
     ports:
       - "8081:3000"
   grpc-locations:
-    image: superhero/grpc-locations
+    image: superhero/grpc-locations:latest
     ports:
       - "50051:50051"
   rest-fights:
-    image: superhero/rest-fights
+    image: superhero/rest-fights:latest
     ports:
       - "8082:3000"
   heroes-db:
