@@ -42,9 +42,9 @@ jobs:
           ls -l
           docker version
           docker info
-      - name: Pull compose
-        run: |
-          docker compose pull
+      # - name: Pull compose
+      #   run: |
+      #     docker compose pull
 
       - name: Cardamon
         run: |
