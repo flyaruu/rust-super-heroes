@@ -11,7 +11,7 @@ jobs:
   cardamon:
     runs-on: ubuntu-latest
     container:
-      image: flyaruu/cardamon_cicd:0.2
+      image: flyaruu/cardamon_cicd:0.2.9
       options: --privileged --shm-size=2g
     steps:
       - name: Checkout
