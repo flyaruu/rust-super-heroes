@@ -33,13 +33,13 @@ struct FightsState {
 async fn main() {
     env_logger::init();
 
-    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=20";
+    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=50";
 
     let client_options = ClientOptions::parse(mongodb_url).await.unwrap();
     // let client = Client::with_options(client_options).unwrap();
     let mongo_client = mongodb::Client::with_options(client_options).unwrap();
     let collection: Collection<FightResult> = mongo_client.database("fights").collection("fight_collection");
-
+    info!("Connected to mongo url: {}", mongodb_url);
     let locations_client: LocationsClient<Channel> = loop {
         match LocationsClient::connect("http://grpc-locations:50051").await {
             Ok(client) => break client,
