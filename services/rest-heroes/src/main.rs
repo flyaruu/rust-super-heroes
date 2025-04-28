@@ -1,8 +1,9 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::{
     extract::{Path, State}, http::StatusCode, routing::get, Json, Router
 };
+use log::info;
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions, query_as};
 use superhero_types::heroes::SqlHero;
 
@@ -13,14 +14,17 @@ struct HeroesState {
 
 #[tokio::main]
 async fn main() {
-    println!("Main");
-
-    let pool = PgPoolOptions::new()
-        .max_connections(30)
+    env_logger::init();
+    let pool = loop {
+        match PgPoolOptions::new()
         .connect("postgres://superman:superman@heroes-db:5432/heroes_database")
-        .await
-        .unwrap();
-    println!("Pool created");
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {},
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await
+    };
+    info!("Pool created");
     let state = HeroesState {
         pool: Arc::new(pool),
     };
@@ -31,8 +35,10 @@ async fn main() {
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Listener created");
+    info!("Listener created");
     axum::serve(listener, app).await.unwrap();
+    info!("Exiting heroes service");
+
 }
 
 async fn hero(

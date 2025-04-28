@@ -1,8 +1,9 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::{
     extract::{Path, State}, http::StatusCode, routing::get, Json, Router
 };
+use log::info;
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions, query_as};
 use superhero_types::villains::SqlVillain;
 
@@ -13,14 +14,18 @@ struct VillainState {
 
 #[tokio::main]
 async fn main() {
-    println!("Main");
-
-    let pool = PgPoolOptions::new()
-        .max_connections(30)
+    info!("Main");
+    env_logger::init();
+    let pool = loop {
+        match PgPoolOptions::new()
         .connect("postgres://superman:superman@villains-db:5432/villains_database")
-        .await
-        .unwrap();
-    println!("Pool created");
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {},
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await
+    };
+    info!("Pool created");
     let state = VillainState {
         pool: Arc::new(pool),
     };
@@ -33,8 +38,9 @@ async fn main() {
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Listener created");
+    info!("Listener created");
     axum::serve(listener, app).await.unwrap();
+    info!("Exiting villains service");
 }
 
 async fn villain(

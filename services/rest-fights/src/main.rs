@@ -31,6 +31,7 @@ struct FightsState {
 
 #[tokio::main]
 async fn main() {
+    // do things
     env_logger::init();
 
     let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=50";

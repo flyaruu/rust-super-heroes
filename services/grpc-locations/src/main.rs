@@ -1,9 +1,10 @@
-use std::result::Result;
+use std::{result::Result, time::Duration};
 
 use location::{
     DeleteAllLocationsResponse, HelloReply, LocationsList,
     locations_server::{Locations, LocationsServer},
 };
+use log::warn;
 use sqlx::{mysql::MySqlPoolOptions, query_as, MySql, Pool};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
@@ -127,11 +128,19 @@ impl From<location::Location> for SqlLocation {
 
 #[tokio::main]
 async fn main() {
-    let pool = MySqlPoolOptions::new()
+    let pool = loop {
+        match MySqlPoolOptions::new()
         .max_connections(30)
         .connect("mysql://locations:locations@locations-db/locations_database")
-        .await
-        .unwrap();
+        .await {
+            Ok(pool) => break pool,
+            Err(_) => {
+                warn!("Location database not up yet")
+            },
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await
+    };
+
     let core = MyLocations { pool: pool };
 
     let addr = "[::]:50051".parse().unwrap();

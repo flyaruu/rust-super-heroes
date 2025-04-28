@@ -9,6 +9,9 @@ sqlx = { version = "0.8.3", features = ["mysql", "runtime-tokio"] }
 tokio = { version = "1.44.1", features = ["full"] }
 tonic = "0.12.3"
 superhero-types = { path = "../../lib/superhero-types"}
+log = "0.4.26"
+env_logger = "0.11.7"
+
 
 [build-dependencies]
 tonic-build = "0.12.3"

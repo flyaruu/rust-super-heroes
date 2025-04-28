@@ -1,5 +1,7 @@
 FROM rust:1.85 AS build
-RUN apt-get update && apt-get install -y protobuf-compiler libprotobuf-dev
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 
 # Step 1: Copy workspace Cargo files to cache dependencies
@@ -17,8 +19,9 @@ RUN mkdir -p services/rest-villains/src && echo "fn main() {}" > services/rest-v
 RUN mkdir -p services/grpc-locations/src && echo "fn main() {}" > services/grpc-locations/src/main.rs
 RUN mkdir -p services/rest-fights/src && echo "fn main() {}" > services/rest-fights/src/main.rs
 
+RUN cargo fetch
 # Step 3: Build dependencies
-RUN cargo build --bins --release
+#RUN cargo build --bins --release
 
 # Step 4: Copy full source code and rebuild
 COPY . .
