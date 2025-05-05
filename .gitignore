@@ -4,3 +4,4 @@ cardamon.db
 .stderr
 .stdout
 cardamon.bak
+.buildx-cache
