@@ -6,7 +6,6 @@ name = "Apple M4 Pro"
 curve = [30.508760345993128,0.0730308567638932,20.451103066868207,-5.08379885619235]
 
 
-#"event-statistics-java21" "fights-kafka" "rest-narration-java21" "apicurio", "apicurio", "ui-super-heroes"
 [[process]]
 name = "superheroes"
 up = "docker compose up --force-recreate -d"
@@ -17,49 +16,35 @@ process.containers = ["fights-db", "heroes-db", "villains-db", "locations-db", "
 startup_grace = "20s"
 
 [[scenario]]
-name = "k6-rust-high"
-desc = "High test for 60s"
-command = "k6 run high.js"
+name = "200"
+desc = "High load test. 200 r/s."
+command = "k6 run k6/load.js -e RAMPING_RATE=200 -e K6_HOST=http://localhost:8000 --summary-export k6_200.json"
 iterations = 3
 processes = ["superheroes"]
 
 [[scenario]]
-name = "k6-rust-low"
-desc = "Low load test."
-command = "k6 run low.js"
+name = "100"
+desc = "Load test. 100 r/s."
+command = "k6 run -e RAMPING_RATE=100 -e K6_HOST=http://localhost:8000 k6/load.js --summary-export k6_100.json"
 iterations = 3
 processes = ["superheroes"]
 
 [[scenario]]
-name = "k6-rust-none"
-desc = "No load test."
-command = "k6 run none.js"
+name = "1"
+desc = "No load test. 1 r/s."
+command = "k6 run -e RAMPING_RATE=1 -e K6_HOST=http://localhost:8000 k6/load.js  --summary-export k6_1.json"
 iterations = 3
 processes = ["superheroes"]
 
 [[scenario]]
-name = "k6-rust-max"
-desc = "No load test."
-command = "k6 run max.js"
+name = "10"
+desc = "Low load test, 10 r/s."
+command = "k6 run -e RAMPING_RATE=10 -e K6_HOST=http://localhost:8000 k6/load.js --summary-export k6_10.json"
 iterations = 3
-processes = ["superheroes"]
-
-[[scenario]]
-name = "k6-rust-quick"
-desc = "Low load test."
-command = "k6 run low.js"
-iterations = 1
 processes = ["superheroes"]
 
 [[observation]]
-name = "quick"
-scenarios = ["k6-rust-quick"]
+name = "all"
+scenarios = ["1", "10", "100", "200"]
 
 
-[[observation]]
-name = "rust"
-scenarios = ["k6-rust-low","k6-rust-high","k6-rust-none"]
-
-[[observation]]
-name = "rust-max"
-scenarios = ["k6-rust-max"]
