@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check } from 'k6';
-import { randomFight } from './k6/randomFight.js';
+import { randomFight } from './randomFight.js';
 
 export const options = {
   scenarios: {
