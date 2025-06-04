@@ -52,6 +52,6 @@ processes = ["superheroes"]
 
 [[observation]]
 name = "all"
-scenarios = ["1", "10", "100", "200"]
+scenarios = ["1", "10", "100", "150", "200"]
 
 

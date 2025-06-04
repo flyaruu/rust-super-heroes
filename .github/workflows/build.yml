@@ -51,7 +51,7 @@ jobs:
           docker compose pull
       - name: Cardamon All
         run: |
-          export LOG_FILTER=info
+          export LOG_FILTER=warn
           cardamon run all
       - name: Cardamon Stats
         run: |
