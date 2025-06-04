@@ -37,6 +37,13 @@ iterations = 3
 processes = ["superheroes"]
 
 [[scenario]]
+name = "75"
+desc = "Load test. 75 r/s."
+command = "k6 run -e RAMPING_RATE=75 -e K6_HOST=http://localhost:8000 k6/load.js --summary-export k6_75.json"
+iterations = 3
+processes = ["superheroes"]
+
+[[scenario]]
 name = "1"
 desc = "No load test. 1 r/s."
 command = "k6 run -e RAMPING_RATE=1 -e K6_HOST=http://localhost:8000 k6/load.js  --summary-export k6_1.json"
@@ -52,6 +59,7 @@ processes = ["superheroes"]
 
 [[observation]]
 name = "all"
-scenarios = ["1", "10", "100", "150", "200"]
+scenarios = ["1", "10", "50", "75", "100"]
+# scenarios = ["1", "10", "100", "150", "200"]
 
 
