@@ -90,8 +90,8 @@ flow:
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=400 /k6/load.js
-        note: Starting k6 Load Test 400 rps
+        command: k6 run -e RAMPING_RATE=500 /k6/load.js
+        note: Starting k6 Load Test 500 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
@@ -99,8 +99,8 @@ flow:
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=400 /k6/load.js
-        note: Starting k6 Load Test 400 rps
+        command: k6 run -e RAMPING_RATE=600 /k6/load.js
+        note: Starting k6 Load Test 600 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
