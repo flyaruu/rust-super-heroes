@@ -4,7 +4,7 @@ use location::{
     DeleteAllLocationsResponse, HelloReply, LocationsList,
     locations_server::{Locations, LocationsServer},
 };
-use log::warn;
+use log::{info, warn};
 use sqlx::{mysql::MySqlPoolOptions, query_as, MySql, Pool};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
@@ -126,23 +126,24 @@ impl From<location::Location> for SqlLocation {
     }
 }
 
+const LOCATION_DATABASE_URL: &str = "mysql://locations:locations@locations-db/locations_database";
 #[tokio::main]
 async fn main() {
     let pool = loop {
         match MySqlPoolOptions::new()
         .max_connections(30)
-        .connect("mysql://locations:locations@locations-db/locations_database")
+        .connect(LOCATION_DATABASE_URL)
         .await {
             Ok(pool) => break pool,
             Err(_) => {
-                warn!("Location database not up yet")
+                warn!("Location database: {} not up yet", LOCATION_DATABASE_URL);
             },
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };
 
     let core = MyLocations { pool: pool };
-
+    info!("Database found, starting gRPC locations service...");
     let addr = "[::]:50051".parse().unwrap();
     Server::builder()
         .add_service(LocationsServer::new(core))

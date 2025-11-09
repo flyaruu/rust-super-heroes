@@ -30,7 +30,7 @@ RUN cargo build --bins --locked --release
 # Base image for all services
 FROM gcr.io/distroless/cc-debian12 AS base
 ENV RUST_LOG=info
-EXPOSE 3000
+EXPOSE 8000
 
 # rest-heroes service
 FROM base AS rest-heroes

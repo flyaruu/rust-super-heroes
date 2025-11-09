@@ -29,12 +29,14 @@ struct FightsState {
     // rng: ThreadRng,
 }
 
+const DATABASE_URL: &str = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=50";
+
 #[tokio::main]
 async fn main() {
     // do things
     env_logger::init();
 
-    let mongodb_url = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=50";
+    let mongodb_url = DATABASE_URL;
 
     let client_options = ClientOptions::parse(mongodb_url).await.unwrap();
     // let client = Client::with_options(client_options).unwrap();
@@ -63,8 +65,8 @@ async fn main() {
         .route("/api/fights", post(post_fight))
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    // run our app with hyper, listening globally on port 8000
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
     println!("Listener created");
     axum::serve(listener, app).await.unwrap();
 }
@@ -107,7 +109,7 @@ async fn random_fighters(State(fight_state): State<FightsState>) -> Json<Fighter
 
 async fn random_hero(client: &Client) -> SqlHero {
     client
-        .get("http://rest-heroes:3000/api/heroes/random_hero")
+        .get("http://rest-heroes:8000/api/heroes/random_hero")
         .send()
         .await
         .unwrap()
@@ -118,7 +120,7 @@ async fn random_hero(client: &Client) -> SqlHero {
 
 async fn random_villain(client: &Client) -> SqlVillain {
     client
-        .get("http://rest-villains:3000/api/villains/random_villain")
+        .get("http://rest-villains:8000/api/villains/random_villain")
         .send()
         .await
         .unwrap()

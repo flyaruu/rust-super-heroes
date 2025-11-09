@@ -49,17 +49,3 @@ jobs:
         run: |
           docker compose build
           docker compose pull
-      - name: Cardamon All
-        run: |
-          export LOG_FILTER=warn
-          cardamon run all
-      - name: Cardamon Stats
-        run: |
-          cardamon stats >stats.txt
-          cat stats.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cardamon-metrics
-          path: |
-            cardamon.db
-            stats.txt

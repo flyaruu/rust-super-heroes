@@ -36,8 +36,8 @@ async fn main() {
         .route("/api/villains/{id}", get(villain))
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    // run our app with hyper, listening globally on port 8000
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
     info!("Listener created");
     axum::serve(listener, app).await.unwrap();
     info!("Exiting villains service");
