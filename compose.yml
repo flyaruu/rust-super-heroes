@@ -2,7 +2,7 @@ services:
   k6:
     build: k6-image
     environment:
-      K6_HOST: http://fights:8000 
+      K6_HOST: http://rest-fights:8000 
     command: ["bash", "-c", "while true; do sleep 3600; done"]
     volumes:
       - ./k6:/k6:ro
