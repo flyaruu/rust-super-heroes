@@ -5,6 +5,7 @@ RUN apt-get update \
 
 WORKDIR /workspace
 COPY . .
+RUN pwd && ls -la && ls -la services && ls -la lib
 RUN cargo build --workspace --release
 
 FROM gcr.io/distroless/cc-debian12
