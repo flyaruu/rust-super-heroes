@@ -18,19 +18,27 @@ services:
     volumes:
       - ./database/fights-db/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js
   rest-heroes:
-    build: services/rest-heroes
+    build:
+      context: .
+      target: rest-heroes
     ports:
       - "8080:8000"
   rest-villains:
-    build: services/rest-villains
+    build:
+      context: .
+      target: rest-villains
     ports:
       - "8081:8000"
   grpc-locations:
-    build: services/grpc-locations
+    build:
+      context: .
+      target: grpc-locations
     ports:
       - "50051:50051"
   rest-fights:
-    build: services/rest-fights
+    build:
+      context: .
+      target: rest-fights
     ports:
       - "8082:8000"
   heroes-db:
