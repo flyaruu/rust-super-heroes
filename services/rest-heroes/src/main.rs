@@ -1,30 +1,31 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use axum::{
-    extract::{Path, State}, http::StatusCode, routing::get, Json, Router
+    Json, Router,
+    extract::{Path, State},
+    http::StatusCode,
+    routing::get,
 };
 use log::info;
-use sqlx::{Pool, Postgres, postgres::PgPoolOptions, query_as};
+use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
 use superhero_types::heroes::SqlHero;
+
+const HEROES_SQL: &str = include_str!("../../../database/heroes-db/init/heroes.sql");
 
 #[derive(Clone)]
 struct HeroesState {
-    pool: Arc<Pool<Postgres>>,
+    pool: Arc<Pool<Sqlite>>,
 }
 
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    let pool = loop {
-        match PgPoolOptions::new()
-        .connect("postgres://superman:superman@heroes-db:5432/heroes_database")
-        .await {
-            Ok(pool) => break pool,
-            Err(_) => {},
-        }
-        tokio::time::sleep(Duration::from_millis(500)).await
-    };
-    info!("Pool created");
+    let pool = SqlitePoolOptions::new()
+        .connect("sqlite::memory:")
+        .await
+        .unwrap();
+    initialize_heroes(&pool).await;
+    info!("SQLite heroes database initialized");
     let state = HeroesState {
         pool: Arc::new(pool),
     };
@@ -38,7 +39,6 @@ async fn main() {
     info!("Listener created");
     axum::serve(listener, app).await.unwrap();
     info!("Exiting heroes service");
-
 }
 
 async fn hero(
@@ -46,7 +46,7 @@ async fn hero(
     State(heroes_state): State<HeroesState>,
 ) -> (StatusCode, Json<Option<SqlHero>>) {
     println!("User: {}", id);
-    let hero: Option<SqlHero> = query_as("select * from Hero where id=$1")
+    let hero: Option<SqlHero> = query_as("select * from Hero where id=?")
         .bind(id)
         .fetch_optional(&*heroes_state.pool)
         .await
@@ -58,7 +58,45 @@ async fn hero(
     }
 }
 
-async fn random_hero(State(heroes_state): State<HeroesState>) -> (StatusCode, Json<Option<SqlHero>>) {
+async fn initialize_heroes(pool: &Pool<Sqlite>) {
+    sqlx::raw_sql(
+        r#"
+        CREATE TABLE Hero (
+          id INTEGER NOT NULL PRIMARY KEY,
+          level INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          othername TEXT,
+          picture TEXT,
+          powers TEXT
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+
+    seed_with_nextval(pool, HEROES_SQL, "hero_seq").await;
+}
+
+async fn seed_with_nextval(pool: &Pool<Sqlite>, seed_sql: &str, sequence_name: &str) {
+    let marker = format!("nextval('{}')", sequence_name);
+    let mut id = 1;
+
+    for statement in seed_sql.split(';') {
+        let Some(insert_start) = statement.find("INSERT INTO") else {
+            continue;
+        };
+        let statement = statement[insert_start..].trim();
+
+        let statement = statement.replace(&marker, &id.to_string());
+        sqlx::query(&statement).execute(pool).await.unwrap();
+        id += 50;
+    }
+}
+
+async fn random_hero(
+    State(heroes_state): State<HeroesState>,
+) -> (StatusCode, Json<Option<SqlHero>>) {
     let hero: Option<SqlHero> = query_as("select * from Hero order by random() limit 1")
         .fetch_optional(&*heroes_state.pool)
         .await
@@ -71,8 +109,10 @@ async fn random_hero(State(heroes_state): State<HeroesState>) -> (StatusCode, Js
 }
 
 async fn all_heroes(State(heroes_state): State<HeroesState>) -> Json<Vec<SqlHero>> {
-    Json(query_as("select * from Hero")
-        .fetch_all(&*heroes_state.pool)
-        .await
-        .unwrap())
+    Json(
+        query_as("select * from Hero")
+            .fetch_all(&*heroes_state.pool)
+            .await
+            .unwrap(),
+    )
 }

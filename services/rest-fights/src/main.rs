@@ -9,13 +9,15 @@ use axum::{
     extract::State,
     routing::{get, post},
 };
-use location::{locations_client::LocationsClient, Location, RandomLocationRequest};
+use location::{Location, RandomLocationRequest, locations_client::LocationsClient};
 use log::info;
-use mongodb::{options::ClientOptions, Collection};
 use rand::RngCore;
 use reqwest::Client;
+use sqlx::{Pool, Sqlite, sqlite::SqlitePoolOptions};
 use superhero_types::{
-    fights::{FightRequest, FightResult, Fighters, Winner}, heroes::SqlHero, villains::SqlVillain
+    fights::{FightRequest, FightResult, Fighters, Winner},
+    heroes::SqlHero,
+    villains::SqlVillain,
 };
 use tokio::{sync::Mutex, time::sleep};
 use tonic::transport::Channel;
@@ -25,24 +27,21 @@ struct FightsState {
     // LocahtionsClient is clone, so just do that?
     locations_client: Arc<Mutex<LocationsClient<Channel>>>,
     http_client: reqwest::Client,
-    mongo_collection: Collection<FightResult>,
+    pool: Arc<Pool<Sqlite>>,
     // rng: ThreadRng,
 }
-
-const DATABASE_URL: &str = "mongodb://super:super@fights-db/?retryWrites=true&maxPoolSize=50";
 
 #[tokio::main]
 async fn main() {
     // do things
     env_logger::init();
 
-    let mongodb_url = DATABASE_URL;
-
-    let client_options = ClientOptions::parse(mongodb_url).await.unwrap();
-    // let client = Client::with_options(client_options).unwrap();
-    let mongo_client = mongodb::Client::with_options(client_options).unwrap();
-    let collection: Collection<FightResult> = mongo_client.database("fights").collection("fight_collection");
-    info!("Connected to mongo url: {}", mongodb_url);
+    let pool = SqlitePoolOptions::new()
+        .connect("sqlite::memory:")
+        .await
+        .unwrap();
+    initialize_fights(&pool).await;
+    info!("SQLite fights database initialized");
     let locations_client: LocationsClient<Channel> = loop {
         match LocationsClient::connect("http://grpc-locations:50051").await {
             Ok(client) => break client,
@@ -57,7 +56,7 @@ async fn main() {
     let state = FightsState {
         locations_client: Arc::new(Mutex::new(locations_client)),
         http_client: client,
-        mongo_collection: collection,
+        pool: Arc::new(pool),
     };
     let app = Router::new()
         .route("/api/fights/randomlocation", get(random_location))
@@ -76,8 +75,77 @@ async fn post_fight(
     Json(request): Json<FightRequest>,
 ) -> Json<FightResult> {
     let result: FightResult = execute_fight(&request, &fight_state).await;
-    fight_state.mongo_collection.insert_one(&result).await.unwrap();
+    insert_fight_result(&fight_state.pool, &result).await;
     Json(result)
+}
+
+async fn initialize_fights(pool: &Pool<Sqlite>) {
+    sqlx::raw_sql(
+        r#"
+        CREATE TABLE fights (
+          id TEXT NOT NULL PRIMARY KEY,
+          fight_date TEXT NOT NULL,
+          winner_name TEXT NOT NULL,
+          winner_level INTEGER NOT NULL,
+          winner_powers TEXT NOT NULL,
+          winner_picture TEXT NOT NULL,
+          winner_team TEXT NOT NULL,
+          loser_name TEXT NOT NULL,
+          loser_level INTEGER NOT NULL,
+          loser_powers TEXT NOT NULL,
+          loser_picture TEXT NOT NULL,
+          loser_team TEXT NOT NULL,
+          location_name TEXT NOT NULL,
+          location_description TEXT NOT NULL,
+          location_picture TEXT NOT NULL
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+async fn insert_fight_result(pool: &Pool<Sqlite>, result: &FightResult) {
+    sqlx::query(
+        r#"
+        INSERT INTO fights (
+          id,
+          fight_date,
+          winner_name,
+          winner_level,
+          winner_powers,
+          winner_picture,
+          winner_team,
+          loser_name,
+          loser_level,
+          loser_powers,
+          loser_picture,
+          loser_team,
+          location_name,
+          location_description,
+          location_picture
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        "#,
+    )
+    .bind(&result.id)
+    .bind(&result.fight_date)
+    .bind(&result.winner_name)
+    .bind(result.winner_level)
+    .bind(&result.winner_powers)
+    .bind(&result.winner_picture)
+    .bind(&result.winner_team)
+    .bind(&result.loser_name)
+    .bind(result.loser_level)
+    .bind(&result.loser_powers)
+    .bind(&result.loser_picture)
+    .bind(&result.loser_team)
+    .bind(&result.location.name)
+    .bind(&result.location.description)
+    .bind(&result.location.picture)
+    .execute(pool)
+    .await
+    .unwrap();
 }
 
 async fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> FightResult {

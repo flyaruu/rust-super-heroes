@@ -5,7 +5,7 @@ use location::{
     locations_server::{Locations, LocationsServer},
 };
 use log::{info, warn};
-use sqlx::{mysql::MySqlPoolOptions, query_as, MySql, Pool};
+use sqlx::{MySql, Pool, mysql::MySqlPoolOptions, query_as};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
 
@@ -131,13 +131,14 @@ const LOCATION_DATABASE_URL: &str = "mysql://locations:locations@locations-db/lo
 async fn main() {
     let pool = loop {
         match MySqlPoolOptions::new()
-        .max_connections(30)
-        .connect(LOCATION_DATABASE_URL)
-        .await {
+            .max_connections(30)
+            .connect(LOCATION_DATABASE_URL)
+            .await
+        {
             Ok(pool) => break pool,
             Err(_) => {
                 warn!("Location database: {} not up yet", LOCATION_DATABASE_URL);
-            },
+            }
         }
         tokio::time::sleep(Duration::from_millis(100)).await
     };

@@ -7,16 +7,6 @@ services:
     volumes:
       - ./k6:/k6:ro
       - ./k6/results:/results
-  fights-db:
-    image: mongo:7.0
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: fights
-      MONGO_INITDB_ROOT_USERNAME: super
-      MONGO_INITDB_ROOT_PASSWORD: super
-    volumes:
-      - ./database/fights-db/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js
   rest-heroes:
     build: services/rest-heroes
     ports:
@@ -33,26 +23,6 @@ services:
     build: services/rest-fights
     ports:
       - "8082:8000"
-  heroes-db:
-    image: postgres:16
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: superman
-      POSTGRES_PASSWORD: superman
-      POSTGRES_DB: heroes_database
-    volumes:
-      - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql
-  villains-db:
-    image: postgres:16
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: superman
-      POSTGRES_PASSWORD: superman
-      POSTGRES_DB: villains_database
-    volumes:
-      - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql
   locations-db:
     image: mariadb:11.5
     ports:

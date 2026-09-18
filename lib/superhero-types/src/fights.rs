@@ -3,11 +3,7 @@ use std::time::SystemTime;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    heroes::SqlHero,
-    location::SqlLocation,
-    villains::SqlVillain,
-};
+use crate::{heroes::SqlHero, location::SqlLocation, villains::SqlVillain};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,19 +23,19 @@ pub struct FightRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct FightResult {
-    id: String,
-    fight_date: String, // use timestamp data structure?
-    winner_name: String,
-    winner_level: i32,
-    winner_powers: String,
-    winner_picture: String,
-    loser_name: String,
-    loser_level: i32,
-    loser_powers: String,
-    loser_picture: String,
-    winner_team: String,
-    loser_team: String,
-    location: SqlLocation,
+    pub id: String,
+    pub fight_date: String, // use timestamp data structure?
+    pub winner_name: String,
+    pub winner_level: i32,
+    pub winner_powers: String,
+    pub winner_picture: String,
+    pub loser_name: String,
+    pub loser_level: i32,
+    pub loser_powers: String,
+    pub loser_picture: String,
+    pub winner_team: String,
+    pub loser_team: String,
+    pub location: SqlLocation,
 }
 
 #[derive(Clone, Copy)]
