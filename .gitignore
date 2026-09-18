@@ -5,3 +5,4 @@ cardamon.db
 .stdout
 cardamon.bak
 .buildx-cache
+services/*/binary/
