@@ -1,5 +1,5 @@
 ---
-name: Superheroes k6 scenario
+name: Superheroes Rust k6 scenario
 author: Frank Lyaruu
 description: Superheroes (Rust) k6 load testing scenario )
 compose-file: !include compose.yml
