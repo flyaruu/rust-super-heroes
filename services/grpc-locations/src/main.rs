@@ -1,26 +1,29 @@
-use std::{result::Result, time::Duration};
+use std::result::Result;
 
 use location::{
     DeleteAllLocationsResponse, HelloReply, LocationsList,
     locations_server::{Locations, LocationsServer},
 };
-use log::{info, warn};
-use sqlx::{mysql::MySqlPoolOptions, query_as, MySql, Pool};
+use log::info;
+use sqlx::{Pool, Sqlite, query, query_as, sqlite::SqlitePoolOptions};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
+
+const LOCATIONS_SQL: &str =
+    include_str!("../../../database/locations-db/init/initialize-tables.sql");
 
 pub mod location {
     tonic::include_proto!("io.quarkus.sample.superheroes.location.v1");
 }
 
 struct MyLocations {
-    pool: Pool<MySql>,
+    pool: Pool<Sqlite>,
 }
 
 #[tonic::async_trait]
 impl Locations for MyLocations {
     #[allow(
-        elided_named_lifetimes,
+        mismatched_lifetime_syntaxes,
         clippy::type_complexity,
         clippy::type_repetition_in_bounds
     )]
@@ -28,7 +31,7 @@ impl Locations for MyLocations {
         &self,
         _request: Request<location::RandomLocationRequest>,
     ) -> Result<tonic::Response<location::Location>, tonic::Status> {
-        let random: SqlLocation = query_as("select * from locations order by rand() limit 1")
+        let random: SqlLocation = query_as("select * from locations order by random() limit 1")
             .fetch_one(&self.pool)
             .await
             .map_err(|e| Status::from_error(Box::new(e)))?;
@@ -39,8 +42,8 @@ impl Locations for MyLocations {
         &self,
         _request: tonic::Request<location::DeleteAllLocationsRequest>,
     ) -> Result<tonic::Response<location::DeleteAllLocationsResponse>, tonic::Status> {
-        let _: () = query_as("delete from locations")
-            .fetch_one(&self.pool)
+        query("delete from locations")
+            .execute(&self.pool)
             .await
             .map_err(|e| Status::from_error(Box::new(e)))?;
         Ok(Response::new(DeleteAllLocationsResponse {}))
@@ -78,7 +81,7 @@ impl Locations for MyLocations {
         &self,
         _request: tonic::Request<location::AllLocationsRequest>,
     ) -> Result<tonic::Response<LocationsList>, tonic::Status> {
-        let all: Vec<SqlLocation> = query_as("select * from locations order by rand() limit 1")
+        let all: Vec<SqlLocation> = query_as("select * from locations")
             .fetch_all(&self.pool)
             .await
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
@@ -89,16 +92,6 @@ impl Locations for MyLocations {
 
 impl From<SqlLocation> for location::Location {
     fn from(value: SqlLocation) -> Self {
-        // let location_type: i32 = match value.r#type.to_lowercase().as_str() {
-        //     "city" => LocationType::City.into(),
-        //     "planet" => LocationType::Planet.into(),
-        //     "place" => LocationType::Place.into(),
-        //     "island" => LocationType::Island.into(),
-        //     "country" => LocationType::Country.into(),
-        //     "moon" => LocationType::Moon.into(),
-        //     _ => panic!("Unexpected type: {}",value.r#type)
-        // };
-        // TODO deal with the type
         Self {
             name: value.name,
             description: value.description,
@@ -110,14 +103,6 @@ impl From<SqlLocation> for location::Location {
 
 impl From<location::Location> for SqlLocation {
     fn from(value: location::Location) -> Self {
-        // let sql_type = match value.r#type() {
-        //     LocationType::Planet => "planet",
-        //     LocationType::City => "city",
-        //     LocationType::Place => "place",
-        //     LocationType::Island => "island",
-        //     LocationType::Country => "country",
-        //     LocationType::Moon => "moon",
-        // };
         SqlLocation {
             description: value.description,
             name: value.name,
@@ -126,24 +111,16 @@ impl From<location::Location> for SqlLocation {
     }
 }
 
-const LOCATION_DATABASE_URL: &str = "mysql://locations:locations@locations-db/locations_database";
 #[tokio::main]
 async fn main() {
-    let pool = loop {
-        match MySqlPoolOptions::new()
-        .max_connections(30)
-        .connect(LOCATION_DATABASE_URL)
-        .await {
-            Ok(pool) => break pool,
-            Err(_) => {
-                warn!("Location database: {} not up yet", LOCATION_DATABASE_URL);
-            },
-        }
-        tokio::time::sleep(Duration::from_millis(100)).await
-    };
+    let pool = SqlitePoolOptions::new()
+        .connect("sqlite::memory:")
+        .await
+        .unwrap();
+    initialize_locations(&pool).await;
 
-    let core = MyLocations { pool: pool };
-    info!("Database found, starting gRPC locations service...");
+    let core = MyLocations { pool };
+    info!("SQLite locations database initialized, starting gRPC locations service...");
     let addr = "[::]:50051".parse().unwrap();
     Server::builder()
         .add_service(LocationsServer::new(core))
@@ -152,13 +129,27 @@ async fn main() {
         .unwrap();
 }
 
-// async fn query_locations()->Vec<SqlLocation> {
-//     let pool = MySqlPool::connect("mysql://locations:locations@locations-db/locations_database")
-//         .await
-//         .unwrap();
-//     let all: Vec<SqlLocation> = query_as("select * from locations order by rand() limit 1")
-//         .fetch_all(&pool)
-//         .await
-//         .unwrap();
-//     all
-// }
+async fn initialize_locations(pool: &Pool<Sqlite>) {
+    sqlx::raw_sql(
+        r#"
+        CREATE TABLE locations (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          description TEXT,
+          name TEXT NOT NULL UNIQUE,
+          picture TEXT,
+          type TEXT NOT NULL
+        );
+        "#,
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+
+    for statement in LOCATIONS_SQL.split(';') {
+        let Some(insert_start) = statement.find("INSERT INTO") else {
+            continue;
+        };
+        let statement = statement[insert_start..].trim();
+        sqlx::query(statement).execute(pool).await.unwrap();
+    }
+}

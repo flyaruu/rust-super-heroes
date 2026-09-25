@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 prost = { version = "0.13.5", features = ["prost-derive"] }
-sqlx = { version = "0.8.3", features = ["mysql", "runtime-tokio"] }
+sqlx = { version = "0.8.3", default-features = false, features = ["sqlite", "runtime-tokio"] }
 tokio = { version = "1.44.1", features = ["full"] }
 tonic = "0.12.3"
 superhero-types = { path = "../../lib/superhero-types" }

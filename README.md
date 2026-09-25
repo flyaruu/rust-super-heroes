@@ -9,10 +9,9 @@ I tried to write decently performing code but didn't do any optimizing.
 Error handling is largely just unwrapping
 
 ### TO-DO's:
-Save the fights to MongoDB
 Save the stats to Kafka
 
-The databases are the same containers as the original (2x Postgres 1x MariaDB, 1x MongoDB)
+The services use in-process SQLite databases seeded at startup.
 
 Quarkus:
 ![image info](images/java.png)
