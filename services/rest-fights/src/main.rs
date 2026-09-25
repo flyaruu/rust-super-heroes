@@ -2,7 +2,7 @@ pub mod location {
     tonic::include_proto!("io.quarkus.sample.superheroes.location.v1");
 }
 
-use std::{sync::Arc, time::Duration};
+use std::{env, sync::Arc, time::Duration};
 
 use axum::{
     Json, Router,
@@ -27,9 +27,15 @@ struct FightsState {
     // LocahtionsClient is clone, so just do that?
     locations_client: Arc<Mutex<LocationsClient<Channel>>>,
     http_client: reqwest::Client,
+    heroes_base_url: String,
+    villains_base_url: String,
     pool: Arc<Pool<Sqlite>>,
     // rng: ThreadRng,
 }
+
+const DEFAULT_HEROES_BASE_URL: &str = "http://localhost:8080";
+const DEFAULT_VILLAINS_BASE_URL: &str = "http://localhost:8081";
+const DEFAULT_LOCATIONS_BASE_URL: &str = "http://localhost:50051";
 
 #[tokio::main]
 async fn main() {
@@ -43,8 +49,12 @@ async fn main() {
     initialize_fights(&pool).await;
     info!("SQLite fights database initialized");
 
+    let heroes_base_url = env_base_url("HEROES_BASE_URL", DEFAULT_HEROES_BASE_URL);
+    let villains_base_url = env_base_url("VILLAINS_BASE_URL", DEFAULT_VILLAINS_BASE_URL);
+    let locations_base_url = env_base_url("LOCATIONS_BASE_URL", DEFAULT_LOCATIONS_BASE_URL);
+
     let locations_client: LocationsClient<Channel> = loop {
-        match LocationsClient::connect("http://grpc-locations:50051").await {
+        match LocationsClient::connect(locations_base_url.clone()).await {
             Ok(client) => break client,
             Err(e) => {
                 info!("Not up yet, waiting...: {:?}", e);
@@ -57,6 +67,8 @@ async fn main() {
     let state = FightsState {
         locations_client: Arc::new(Mutex::new(locations_client)),
         http_client: client,
+        heroes_base_url,
+        villains_base_url,
         pool: Arc::new(pool),
     };
     let app = Router::new()
@@ -69,6 +81,10 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
     println!("Listener created");
     axum::serve(listener, app).await.unwrap();
+}
+
+fn env_base_url(variable: &str, default: &str) -> String {
+    env::var(variable).unwrap_or_else(|_| default.to_owned())
 }
 
 async fn post_fight(
@@ -170,15 +186,18 @@ async fn random_location(State(fight_state): State<FightsState>) -> Json<Locatio
 
 async fn random_fighters(State(fight_state): State<FightsState>) -> Json<Fighters> {
     let fighters = Fighters {
-        hero: random_hero(&fight_state.http_client).await,
-        villain: random_villain(&fight_state.http_client).await,
+        hero: random_hero(&fight_state.http_client, &fight_state.heroes_base_url).await,
+        villain: random_villain(&fight_state.http_client, &fight_state.villains_base_url).await,
     };
     Json(fighters)
 }
 
-async fn random_hero(client: &Client) -> SqlHero {
+async fn random_hero(client: &Client, heroes_base_url: &str) -> SqlHero {
     client
-        .get("http://rest-heroes:8000/api/heroes/random_hero")
+        .get(format!(
+            "{}/api/heroes/random_hero",
+            heroes_base_url.trim_end_matches('/')
+        ))
         .send()
         .await
         .unwrap()
@@ -187,9 +206,12 @@ async fn random_hero(client: &Client) -> SqlHero {
         .unwrap()
 }
 
-async fn random_villain(client: &Client) -> SqlVillain {
+async fn random_villain(client: &Client, villains_base_url: &str) -> SqlVillain {
     client
-        .get("http://rest-villains:8000/api/villains/random_villain")
+        .get(format!(
+            "{}/api/villains/random_villain",
+            villains_base_url.trim_end_matches('/')
+        ))
         .send()
         .await
         .unwrap()

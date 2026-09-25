@@ -21,5 +21,9 @@ services:
       - "50051:50051"
   rest-fights:
     build: services/rest-fights
+    environment:
+      HEROES_BASE_URL: http://rest-heroes:8000
+      VILLAINS_BASE_URL: http://rest-villains:8000
+      LOCATIONS_BASE_URL: http://grpc-locations:50051
     ports:
       - "8082:8000"
