@@ -99,7 +99,7 @@ async fn post_fight(
     State(fight_state): State<FightsState>,
     Json(request): Json<FightRequest>,
 ) -> Json<FightResult> {
-    let result: FightResult = execute_fight(&request, &fight_state).await;
+    let result: FightResult = execute_fight(&request, &fight_state);
     insert_fight_result(&fight_state.pool, &result).await;
     Json(result)
 }
@@ -173,7 +173,8 @@ async fn insert_fight_result(pool: &Pool<Sqlite>, result: &FightResult) {
     .unwrap();
 }
 
-async fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> FightResult {
+#[inline(never)]
+fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> FightResult {
     let mut rng = rand::rng();
     let winner = if rng.next_u32() % 2 == 0 {
         Winner::Heroes

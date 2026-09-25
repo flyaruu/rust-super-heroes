@@ -17,3 +17,18 @@ strip = false
 codegen-units = 1
 lto = false
 opt-level = 1
+
+[profile.profiling.package.rest-fights]
+opt-level = 0
+
+[profile.profiling.package.rest-heroes]
+opt-level = 0
+
+[profile.profiling.package.rest-villains]
+opt-level = 0
+
+[profile.profiling.package.grpc-locations]
+opt-level = 0
+
+[profile.profiling.package.superhero-types]
+opt-level = 0
