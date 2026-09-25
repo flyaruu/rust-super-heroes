@@ -36,11 +36,13 @@ struct FightsState {
 const DEFAULT_HEROES_BASE_URL: &str = "http://localhost:8080";
 const DEFAULT_VILLAINS_BASE_URL: &str = "http://localhost:8081";
 const DEFAULT_LOCATIONS_BASE_URL: &str = "http://localhost:50051";
+const LISTEN_HOST: &str = "0.0.0.0";
+const LISTEN_PORT: u16 = 8082;
 
 #[tokio::main]
 async fn main() {
     // do things
-    env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let pool = SqlitePoolOptions::new()
         .connect("sqlite::memory:")
@@ -77,9 +79,15 @@ async fn main() {
         .route("/api/fights", post(post_fight))
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 8000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    println!("Listener created");
+    // run our app with hyper, listening globally
+    let listen_address = format!("{}:{}", LISTEN_HOST, LISTEN_PORT);
+    let listener = tokio::net::TcpListener::bind(&listen_address)
+        .await
+        .unwrap();
+    info!(
+        "Fights service listening on host={} port={}",
+        LISTEN_HOST, LISTEN_PORT
+    );
     axum::serve(listener, app).await.unwrap();
 }
 

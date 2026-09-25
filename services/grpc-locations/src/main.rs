@@ -11,6 +11,8 @@ use tonic::{Request, Response, Status, transport::Server};
 
 const LOCATIONS_SQL: &str =
     include_str!("../../../database/locations-db/init/initialize-tables.sql");
+const LISTEN_HOST: &str = "[::]";
+const LISTEN_PORT: u16 = 50051;
 
 pub mod location {
     tonic::include_proto!("io.quarkus.sample.superheroes.location.v1");
@@ -113,6 +115,8 @@ impl From<location::Location> for SqlLocation {
 
 #[tokio::main]
 async fn main() {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
     let pool = SqlitePoolOptions::new()
         .connect("sqlite::memory:")
         .await
@@ -120,8 +124,12 @@ async fn main() {
     initialize_locations(&pool).await;
 
     let core = MyLocations { pool };
-    info!("SQLite locations database initialized, starting gRPC locations service...");
-    let addr = "[::]:50051".parse().unwrap();
+    let listen_address = format!("{}:{}", LISTEN_HOST, LISTEN_PORT);
+    info!(
+        "SQLite locations database initialized, starting gRPC locations service on host={} port={}",
+        LISTEN_HOST, LISTEN_PORT
+    );
+    let addr = listen_address.parse().unwrap();
     Server::builder()
         .add_service(LocationsServer::new(core))
         .serve(addr)

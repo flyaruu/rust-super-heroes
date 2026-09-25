@@ -11,6 +11,8 @@ use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
 use superhero_types::villains::SqlVillain;
 
 const VILLAINS_SQL: &str = include_str!("../../../database/villains-db/init/villains.sql");
+const LISTEN_HOST: &str = "0.0.0.0";
+const LISTEN_PORT: u16 = 8000;
 
 #[derive(Clone)]
 struct VillainState {
@@ -19,7 +21,7 @@ struct VillainState {
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     let pool = SqlitePoolOptions::new()
         .connect("sqlite::memory:")
         .await
@@ -36,8 +38,14 @@ async fn main() {
         .route("/api/villains/{id}", get(villain))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    info!("Listener created");
+    let listen_address = format!("{}:{}", LISTEN_HOST, LISTEN_PORT);
+    let listener = tokio::net::TcpListener::bind(&listen_address)
+        .await
+        .unwrap();
+    info!(
+        "Villains service listening on host={} port={}",
+        LISTEN_HOST, LISTEN_PORT
+    );
     axum::serve(listener, app).await.unwrap();
     info!("Exiting villains service");
 }
