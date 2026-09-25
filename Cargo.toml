@@ -3,5 +3,17 @@ resolver = "2"
 members = ["lib/*","services/*"]
 
 [profile.release]
-debug = true
+debug = "full"
+split-debuginfo = "packed"
 strip = false
+codegen-units = 1
+lto = false
+
+[profile.profiling]
+inherits = "release"
+debug = "full"
+split-debuginfo = "packed"
+strip = false
+codegen-units = 1
+lto = false
+opt-level = 1
