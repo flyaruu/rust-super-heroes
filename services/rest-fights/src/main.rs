@@ -175,12 +175,16 @@ async fn insert_fight_result(pool: &Pool<Sqlite>, result: &FightResult) {
 
 #[inline(never)]
 fn execute_fight(request: &FightRequest, _fight_state: &FightsState) -> FightResult {
-    let mut rng = rand::rng();
-    let winner = if rng.next_u32() % 2 == 0 {
+    let winner = if request.hero.level >=request.villain.level {
         Winner::Heroes
     } else {
         Winner::Villains
     };
+    // let winner = if rng.next_u32() % 2 == 0 {
+    //     Winner::Heroes
+    // } else {
+    //     Winner::Villains
+    // };
     FightResult::new(winner, &request.hero, &request.villain, &request.location)
 }
 
