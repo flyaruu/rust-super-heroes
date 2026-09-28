@@ -1,5 +1,6 @@
 services:
   k6:
+    image: flyaruu/superheroes-rust-sqlite-k6:latest
     build: k6-image
     environment:
       K6_HOST: http://rest-fights:8082
@@ -8,18 +9,22 @@ services:
       - ./k6:/k6:ro
       - ./k6/results:/results
   rest-heroes:
+    image: flyaruu/superheroes-rust-sqlite-rest-heroes:latest
     build: services/rest-heroes
     ports:
       - "8080:8000"
   rest-villains:
+    image: flyaruu/superheroes-rust-sqlite-rest-villains:latest
     build: services/rest-villains
     ports:
       - "8081:8000"
   grpc-locations:
+    image: flyaruu/superheroes-rust-sqlite-grpc-locations:latest
     build: services/grpc-locations
     ports:
       - "50051:50051"
   rest-fights:
+    image: flyaruu/superheroes-rust-sqlite-rest-fights:latest
     build: services/rest-fights
     environment:
       HEROES_BASE_URL: http://rest-heroes:8000
