@@ -2,7 +2,7 @@ services:
   k6:
     build: k6-image
     environment:
-      K6_HOST: http://rest-fights:8000 
+      K6_HOST: http://rest-fights:8000
     command: ["bash", "-c", "while true; do sleep 3600; done"]
     volumes:
       - ./k6:/k6:ro
@@ -19,44 +19,67 @@ services:
       - ./database/fights-db/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js
   rest-heroes:
     build: services/rest-heroes
+    depends_on:
+      heroes-db:
+        condition: service_healthy
     ports:
       - "8080:8000"
   rest-villains:
     build: services/rest-villains
+    depends_on:
+      villains-db:
+        condition: service_healthy
     ports:
       - "8081:8000"
   grpc-locations:
     build: services/grpc-locations
+    depends_on:
+      locations-db:
+        condition: service_healthy
     ports:
       - "50051:50051"
   rest-fights:
     build: services/rest-fights
     ports:
       - "8082:8000"
+  villains-db:
+    image: postgres:16
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_USER: superbad
+      POSTGRES_PASSWORD: superbad
+      POSTGRES_DB: villains_database
+    volumes:
+      - ./rest-villains/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U superbad -d villains_database"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   heroes-db:
     image: postgres:16
     ports:
-      - "5432:5432"
+      - "5432"
     environment:
       POSTGRES_USER: superman
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: heroes_database
     volumes:
-      - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/init.sql
-  villains-db:
-    image: postgres:16
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: superman
-      POSTGRES_PASSWORD: superman
-      POSTGRES_DB: villains_database
-    volumes:
-      - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./rest-heroes/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U superman -d heroes_database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   locations-db:
     image: mariadb:11.5
     ports:
-      - "3306:3306"
+      - "3306"
     environment:
       MARIADB_USER: locations
       MARIADB_PASSWORD: locations
@@ -64,4 +87,10 @@ services:
       MARIADB_ROOT_PASSWORD: locations
       MARIADB_SKIP_TEST_DB: yes
     volumes:
-      - ./database/locations-db/init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql
+      - ./grpc-locations/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u locations --password=locations"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
