@@ -6,7 +6,6 @@ services:
     command: ["bash", "-c", "while true; do sleep 3600; done"]
     volumes:
       - ./k6:/k6:ro
-      - ./k6/results:/results
   rest-heroes:
     image: flyaruu/superheroes-rust-sqlite-rest-heroes:latest
     ports:
