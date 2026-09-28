@@ -1,6 +1,5 @@
 services:
   k6:
-    image: flyaruu/superheroes-rust-sqlite-k6:latest
     build: k6-image
     environment:
       K6_HOST: http://rest-fights:8082
