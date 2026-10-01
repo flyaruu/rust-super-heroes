@@ -9,6 +9,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: super
     volumes:
       - ./database/fights-db/initialize-database.js:/docker-entrypoint-initdb.d/1-init-db.js:ro
+
   rest-heroes:
     image: flyaruu/superheroes-rust-rest-heroes:latest
     depends_on:
@@ -43,7 +44,8 @@ services:
       POSTGRES_PASSWORD: superbad
       POSTGRES_DB: villains_database
     volumes:
-      - ./rest-villains/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+      - ./database/villains-db/init/villains.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U superbad -d villains_database"]
       interval: 10s
@@ -60,7 +62,7 @@ services:
       POSTGRES_PASSWORD: superman
       POSTGRES_DB: heroes_database
     volumes:
-      - ./rest-heroes/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+      - ./database/heroes-db/init/heroes.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U superman -d heroes_database"]
       interval: 10s
@@ -79,7 +81,8 @@ services:
       MARIADB_ROOT_PASSWORD: locations
       MARIADB_SKIP_TEST_DB: yes
     volumes:
-      - ./grpc-locations/deploy/db-init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+      - ./database/locations-db/init/initialize-tables.sql:/docker-entrypoint-initdb.d/1-init-tables.sql:ro
+
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u locations --password=locations"]
       interval: 10s

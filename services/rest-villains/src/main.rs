@@ -18,7 +18,7 @@ async fn main() {
     env_logger::init();
     let pool = loop {
         match PgPoolOptions::new()
-        .connect("postgres://superman:superman@villains-db:5432/villains_database")
+        .connect("postgres://superbad:superbad@villains-db:5432/villains_database")
         .await {
             Ok(pool) => break pool,
             Err(_) => {},
