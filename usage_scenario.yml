@@ -22,48 +22,48 @@ flow:
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 30 RPS
+  - name: K6 run 25 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=30 /k6/load.js
-        note: Starting k6 Load Test 30 rps
+        command: k6 run -e RAMPING_RATE=25 /k6/load.js
+        note: Starting k6 Load Test 25 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 150 RPS
+  - name: K6 run 125 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=150 /k6/load.js
-        note: Starting k6 Load Test 150 rps
+        command: k6 run -e RAMPING_RATE=125 /k6/load.js
+        note: Starting k6 Load Test 125 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 225 RPS
+  - name: K6 run 188 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=225 /k6/load.js
-        note: Starting k6 Load Test 225 rps
+        command: k6 run -e RAMPING_RATE=188 /k6/load.js
+        note: Starting k6 Load Test 188 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 300 RPS
+  - name: K6 run 250 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=300 /k6/load.js
-        note: Starting k6 Load Test 300 rps
+        command: k6 run -e RAMPING_RATE=250 /k6/load.js
+        note: Starting k6 Load Test 250 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 600 RPS
+  - name: K6 run 500 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=600 /k6/load.js
-        note: Starting k6 Load Test 600 rps
+        command: k6 run -e RAMPING_RATE=500 /k6/load.js
+        note: Starting k6 Load Test 500 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
