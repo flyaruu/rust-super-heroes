@@ -13,39 +13,21 @@ services:
     volumes:
       - ./k6:/k6:ro
 flow:
-  - name: K6 run 5 RPS
+  - name: K6 run 10 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=5 /k6/load.js
-        note: Starting k6 Load Test 5 rps
+        command: k6 run -e RAMPING_RATE=10 /k6/load.js
+        note: Starting k6 Load Test 10 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 50 RPS
+  - name: K6 run 100 RPS
     container: k6
     commands:
       - type: console
-        command: k6 run -e RAMPING_RATE=50 /k6/load.js
-        note: Starting k6 Load Test 50 rps
-        log-stdout: true
-        read-notes-stdout: true
-        read-sci-stdout: true
-  - name: K6 run 250 RPS
-    container: k6
-    commands:
-      - type: console
-        command: k6 run -e RAMPING_RATE=250 /k6/load.js
-        note: Starting k6 Load Test 250 rps
-        log-stdout: true
-        read-notes-stdout: true
-        read-sci-stdout: true
-  - name: K6 run 375 RPS
-    container: k6
-    commands:
-      - type: console
-        command: k6 run -e RAMPING_RATE=375 /k6/load.js
-        note: Starting k6 Load Test 375 rps
+        command: k6 run -e RAMPING_RATE=100 /k6/load.js
+        note: Starting k6 Load Test 100 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
@@ -58,12 +40,30 @@ flow:
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
+  - name: K6 run 750 RPS
+    container: k6
+    commands:
+      - type: console
+        command: k6 run -e RAMPING_RATE=750 /k6/load.js
+        note: Starting k6 Load Test 750 rps
+        log-stdout: true
+        read-notes-stdout: true
+        read-sci-stdout: true
   - name: K6 run 1000 RPS
     container: k6
     commands:
       - type: console
         command: k6 run -e RAMPING_RATE=1000 /k6/load.js
         note: Starting k6 Load Test 1000 rps
+        log-stdout: true
+        read-notes-stdout: true
+        read-sci-stdout: true
+  - name: K6 run 2000 RPS
+    container: k6
+    commands:
+      - type: console
+        command: k6 run -e RAMPING_RATE=2000 /k6/load.js
+        note: Starting k6 Load Test 2000 rps
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
