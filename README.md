@@ -13,6 +13,12 @@ Save the stats to Kafka
 
 The services use in-process SQLite databases seeded at startup.
 
+Build all Rust services and their images with:
+
+```sh
+docker compose build
+```
+
 Quarkus:
 ![image info](images/java.png)
 Rust:

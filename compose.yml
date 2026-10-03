@@ -7,18 +7,34 @@ services:
   #   volumes:
   #     - ./k6:/k6:ro
   rest-heroes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: rest-heroes
     image: flyaruu/superheroes-rust-sqlite-rest-heroes:latest
     ports:
       - "8080:8000"
   rest-villains:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: rest-villains
     image: flyaruu/superheroes-rust-sqlite-rest-villains:latest
     ports:
       - "8081:8000"
   grpc-locations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: grpc-locations
     image: flyaruu/superheroes-rust-sqlite-grpc-locations:latest
     ports:
       - "50051:50051"
   rest-fights:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: rest-fights
     image: flyaruu/superheroes-rust-sqlite-rest-fights:latest
     environment:
       HEROES_BASE_URL: http://rest-heroes:8000
