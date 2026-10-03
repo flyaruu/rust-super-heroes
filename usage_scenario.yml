@@ -58,12 +58,3 @@ flow:
         log-stdout: true
         read-notes-stdout: true
         read-sci-stdout: true
-  - name: K6 run 2000 RPS
-    container: k6
-    commands:
-      - type: console
-        command: k6 run -e RAMPING_RATE=2000 /k6/load.js
-        note: Starting k6 Load Test 2000 rps
-        log-stdout: true
-        read-notes-stdout: true
-        read-sci-stdout: true
