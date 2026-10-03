@@ -11,7 +11,6 @@ use axum::{
 };
 use location::{Location, RandomLocationRequest, locations_client::LocationsClient};
 use log::info;
-use rand::RngCore;
 use reqwest::Client;
 use sqlx::{Pool, Sqlite, sqlite::SqlitePoolOptions};
 use superhero_types::{
