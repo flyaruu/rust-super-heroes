@@ -37,3 +37,9 @@ ENV RUST_LOG=info
 EXPOSE 8082
 COPY --from=builder /app/target/release/rest-fights /rest-fights
 CMD ["/rest-fights"]
+
+FROM gcr.io/distroless/cc-debian12 AS rest-fights-complete
+ENV RUST_LOG=info
+EXPOSE 8082
+COPY --from=builder /app/target/release/rest-fights-complete /rest-fights-complete
+CMD ["/rest-fights-complete"]

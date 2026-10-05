@@ -1789,6 +1789,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "rest-fights-complete"
+version = "0.1.0"
+dependencies = [
+ "axum 0.8.1",
+ "env_logger",
+ "grpc-locations",
+ "log",
+ "rest-heroes",
+ "rest-villains",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "superhero-types",
+ "tokio",
+]
+
+[[package]]
 name = "rest-heroes"
 version = "0.1.0"
 dependencies = [

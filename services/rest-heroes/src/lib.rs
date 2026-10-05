@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use axum::http::StatusCode;
 use log::info;
 use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
 use superhero_types::heroes::SqlHero;
