@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{env, str::FromStr, sync::Arc};
 
 use axum::{
     Json,
@@ -6,7 +6,10 @@ use axum::{
     http::StatusCode,
 };
 use log::info;
-use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
+use sqlx::{
+    Pool, Sqlite, query_as, query_scalar,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use superhero_types::villains::SqlVillain;
 
 const VILLAINS_SQL: &str = include_str!("../../../database/villains-db/init/villains.sql");
@@ -16,9 +19,17 @@ pub struct VillainState {
     pub pool: Arc<Pool<Sqlite>>,
 }
 
+const DEFAULT_DATABASE_URL: &str = "sqlite:///tmp/db/villains.db";
+
 pub async fn initialize() -> VillainState {
+    let database_url =
+        env::var("VILLAINS_DATABASE_URL").unwrap_or_else(|_| DEFAULT_DATABASE_URL.to_owned());
+    let options = SqliteConnectOptions::from_str(&database_url)
+        .unwrap()
+        .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+        .connect_with(options)
         .await
         .unwrap();
     initialize_villains(&pool).await;
@@ -68,10 +79,11 @@ pub async fn all_villains(State(villain_state): State<VillainState>) -> Json<Vec
     )
 }
 
+
 async fn initialize_villains(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
         r#"
-        CREATE TABLE Villain (
+        CREATE TABLE IF NOT EXISTS Villain (
           id INTEGER NOT NULL PRIMARY KEY,
           level INTEGER NOT NULL,
           name TEXT NOT NULL,
@@ -85,7 +97,13 @@ async fn initialize_villains(pool: &Pool<Sqlite>) {
     .await
     .unwrap();
 
-    seed_with_nextval(pool, VILLAINS_SQL, "villain_seq").await;
+    let villain_count: i64 = query_scalar("SELECT COUNT(*) FROM Villain")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    if villain_count == 0 {
+        seed_with_nextval(pool, VILLAINS_SQL, "villain_seq").await;
+    }
 }
 
 async fn seed_with_nextval(pool: &Pool<Sqlite>, seed_sql: &str, sequence_name: &str) {

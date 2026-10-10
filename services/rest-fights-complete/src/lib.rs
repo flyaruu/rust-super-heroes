@@ -1,10 +1,13 @@
-use std::sync::Arc;
+use std::{env, str::FromStr, sync::Arc};
 
 use axum::{Json, extract::State};
 use log::info;
 use rest_heroes::HeroesState;
 use rest_villains::VillainState;
-use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
+use sqlx::{
+    Pool, Sqlite, query_as,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use superhero_types::{
     fights::{FightRequest, FightResult, Fighters, Winner},
     heroes::SqlHero,
@@ -20,9 +23,17 @@ pub struct FightsState {
     pub pool: Arc<Pool<Sqlite>>,
 }
 
+const DEFAULT_DATABASE_URL: &str = "sqlite:///tmp/db/fights-complete.db";
+
 pub async fn initialize() -> FightsState {
+    let database_url = env::var("FIGHTS_COMPLETE_DATABASE_URL")
+        .unwrap_or_else(|_| DEFAULT_DATABASE_URL.to_owned());
+    let options = SqliteConnectOptions::from_str(&database_url)
+        .unwrap()
+        .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+        .connect_with(options)
         .await
         .unwrap();
     initialize_fights(&pool).await;
@@ -52,7 +63,7 @@ pub async fn post_fight(
 async fn initialize_fights(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
         r#"
-        CREATE TABLE fights (
+        CREATE TABLE IF NOT EXISTS fights (
           id TEXT NOT NULL PRIMARY KEY,
           fight_date TEXT NOT NULL,
           winner_name TEXT NOT NULL,

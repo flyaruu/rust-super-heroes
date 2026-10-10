@@ -4,6 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: rest-heroes
+    environment:
+      HEROES_DATABASE_URL: sqlite:///data/heroes/heroes.db
+    volumes:
+      - heroes-db:/data/heroes
     ports:
       - "8080:8000"
   rest-villains:
@@ -11,6 +15,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: rest-villains
+    environment:
+      VILLAINS_DATABASE_URL: sqlite:///data/villains/villains.db
+    volumes:
+      - villains-db:/data/villains
     ports:
       - "8081:8000"
   grpc-locations:
@@ -18,6 +26,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: grpc-locations
+    environment:
+      LOCATIONS_DATABASE_URL: sqlite:///data/locations/locations.db
+    volumes:
+      - locations-db:/data/locations
     ports:
       - "50051:50051"
   rest-fights:
@@ -29,5 +41,14 @@ services:
       HEROES_BASE_URL: http://rest-heroes:8000
       VILLAINS_BASE_URL: http://rest-villains:8000
       LOCATIONS_BASE_URL: http://grpc-locations:50051
+      FIGHTS_DATABASE_URL: sqlite:///data/fights/fights.db
+    volumes:
+      - fights-db:/data/fights
     ports:
       - "8082:8082"
+
+volumes:
+  heroes-db:
+  villains-db:
+  locations-db:
+  fights-db:

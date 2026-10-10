@@ -2,13 +2,16 @@ pub mod location {
     tonic::include_proto!("io.quarkus.sample.superheroes.location.v1");
 }
 
-use std::{env, sync::Arc, time::Duration};
+use std::{env, str::FromStr, sync::Arc, time::Duration};
 
 use axum::{Json, extract::State};
 use location::{Location, RandomLocationRequest, locations_client::LocationsClient};
 use log::info;
 use reqwest::Client;
-use sqlx::{Pool, Sqlite, sqlite::SqlitePoolOptions};
+use sqlx::{
+    Pool, Sqlite,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use superhero_types::{
     fights::{FightRequest, FightResult, Fighters, Winner},
     heroes::SqlHero,
@@ -30,9 +33,17 @@ pub const DEFAULT_HEROES_BASE_URL: &str = "http://localhost:8080";
 pub const DEFAULT_VILLAINS_BASE_URL: &str = "http://localhost:8081";
 pub const DEFAULT_LOCATIONS_BASE_URL: &str = "http://localhost:50051";
 
+const DEFAULT_DATABASE_URL: &str = "sqlite:///tmp/db/fights.db";
+
 pub async fn initialize() -> FightsState {
+    let database_url =
+        env::var("FIGHTS_DATABASE_URL").unwrap_or_else(|_| DEFAULT_DATABASE_URL.to_owned());
+    let options = SqliteConnectOptions::from_str(&database_url)
+        .unwrap()
+        .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+        .connect_with(options)
         .await
         .unwrap();
     initialize_fights(&pool).await;
@@ -78,7 +89,7 @@ pub async fn post_fight(
 async fn initialize_fights(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
         r#"
-        CREATE TABLE fights (
+        CREATE TABLE IF NOT EXISTS fights (
           id TEXT NOT NULL PRIMARY KEY,
           fight_date TEXT NOT NULL,
           winner_name TEXT NOT NULL,

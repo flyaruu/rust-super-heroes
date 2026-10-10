@@ -11,5 +11,21 @@ services:
       context: .
       dockerfile: Dockerfile
       target: rest-fights-complete
+    environment:
+      FIGHTS_COMPLETE_DATABASE_URL: sqlite:///data/fights-complete/fights-complete.db
+      HEROES_DATABASE_URL: sqlite:///data/heroes/heroes.db
+      VILLAINS_DATABASE_URL: sqlite:///data/villains/villains.db
+      LOCATIONS_DATABASE_URL: sqlite:///data/locations/locations.db
+    volumes:
+      - fights-complete-db:/data/fights-complete
+      - heroes-db:/data/heroes
+      - villains-db:/data/villains
+      - locations-db:/data/locations
     ports:
       - "8082:8082"
+
+volumes:
+  fights-complete-db:
+  heroes-db:
+  villains-db:
+  locations-db:

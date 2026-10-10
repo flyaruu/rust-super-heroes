@@ -1,7 +1,10 @@
-use std::sync::Arc;
+use std::{env, str::FromStr, sync::Arc};
 
 use log::info;
-use sqlx::{Pool, Sqlite, query_as, sqlite::SqlitePoolOptions};
+use sqlx::{
+    Pool, Sqlite, query_as, query_scalar,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use superhero_types::heroes::SqlHero;
 
 const HEROES_SQL: &str = include_str!("../../../database/heroes-db/init/heroes.sql");
@@ -11,9 +14,17 @@ pub struct HeroesState {
     pub pool: Arc<Pool<Sqlite>>,
 }
 
+const DEFAULT_DATABASE_URL: &str = "sqlite:///tmp/db/heroes.db";
+
 pub async fn initialize() -> HeroesState {
+    let database_url = env::var("HEROES_DATABASE_URL")
+        .unwrap_or_else(|_| DEFAULT_DATABASE_URL.to_owned());
+    let options = SqliteConnectOptions::from_str(&database_url)
+        .unwrap()
+        .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+        .connect_with(options)
         .await
         .unwrap();
     initialize_heroes(&pool).await;
@@ -24,10 +35,11 @@ pub async fn initialize() -> HeroesState {
     }
 }
 
+
 async fn initialize_heroes(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
         r#"
-        CREATE TABLE Hero (
+        CREATE TABLE IF NOT EXISTS Hero (
           id INTEGER NOT NULL PRIMARY KEY,
           level INTEGER NOT NULL,
           name TEXT NOT NULL,
@@ -41,7 +53,13 @@ async fn initialize_heroes(pool: &Pool<Sqlite>) {
     .await
     .unwrap();
 
-    seed_with_nextval(pool, HEROES_SQL, "hero_seq").await;
+    let hero_count: i64 = query_scalar("SELECT COUNT(*) FROM Hero")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    if hero_count == 0 {
+        seed_with_nextval(pool, HEROES_SQL, "hero_seq").await;
+    }
 }
 
 async fn seed_with_nextval(pool: &Pool<Sqlite>, seed_sql: &str, sequence_name: &str) {

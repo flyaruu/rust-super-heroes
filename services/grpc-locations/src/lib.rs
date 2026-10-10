@@ -1,11 +1,14 @@
-use std::result::Result;
+use std::{env, result::Result, str::FromStr};
 
 use location::{
     DeleteAllLocationsResponse, HelloReply, LocationsList,
     locations_server::{Locations, LocationsServer},
 };
 use log::info;
-use sqlx::{Pool, Sqlite, query, query_as, sqlite::SqlitePoolOptions};
+use sqlx::{
+    Pool, Sqlite, query, query_as, query_scalar,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 use superhero_types::location::SqlLocation;
 use tonic::{Request, Response, Status, transport::Server};
 
@@ -133,9 +136,17 @@ pub async fn delete_all_locations(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error
     Ok(())
 }
 
+const DEFAULT_DATABASE_URL: &str = "sqlite:///tmp/db/locations.db";
+
 pub async fn initialize() -> MyLocations {
+    let database_url =
+        env::var("LOCATIONS_DATABASE_URL").unwrap_or_else(|_| DEFAULT_DATABASE_URL.to_owned());
+    let options = SqliteConnectOptions::from_str(&database_url)
+        .unwrap()
+        .create_if_missing(true);
+
     let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+        .connect_with(options)
         .await
         .unwrap();
     initialize_locations(&pool).await;
@@ -160,7 +171,7 @@ pub async fn run_server(core: MyLocations) {
 async fn initialize_locations(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
         r#"
-        CREATE TABLE locations (
+        CREATE TABLE IF NOT EXISTS locations (
           id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           description TEXT,
           name TEXT NOT NULL UNIQUE,
@@ -173,11 +184,17 @@ async fn initialize_locations(pool: &Pool<Sqlite>) {
     .await
     .unwrap();
 
-    for statement in LOCATIONS_SQL.split(';') {
-        let Some(insert_start) = statement.find("INSERT INTO") else {
-            continue;
-        };
-        let statement = statement[insert_start..].trim();
-        sqlx::query(statement).execute(pool).await.unwrap();
+    let location_count: i64 = query_scalar("SELECT COUNT(*) FROM locations")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    if location_count == 0 {
+        for statement in LOCATIONS_SQL.split(';') {
+            let Some(insert_start) = statement.find("INSERT INTO") else {
+                continue;
+            };
+            let statement = statement[insert_start..].trim();
+            sqlx::query(statement).execute(pool).await.unwrap();
+        }
     }
 }
