@@ -13,8 +13,8 @@ services:
       target: rest-heroes
     environment:
       HEROES_DATABASE_URL: sqlite:///data/heroes/heroes.db
-    volumes:
-      - heroes-db:/data/heroes
+    tmpfs:
+      - /data/heroes
     ports:
       - "8080:8000"
   rest-villains:
@@ -24,8 +24,8 @@ services:
       target: rest-villains
     environment:
       VILLAINS_DATABASE_URL: sqlite:///data/villains/villains.db
-    volumes:
-      - villains-db:/data/villains
+    tmpfs:
+      - /data/villains
     ports:
       - "8081:8000"
   grpc-locations:
@@ -35,8 +35,8 @@ services:
       target: grpc-locations
     environment:
       LOCATIONS_DATABASE_URL: sqlite:///data/locations/locations.db
-    volumes:
-      - locations-db:/data/locations
+    tmpfs:
+      - /data/locations
     ports:
       - "50051:50051"
   rest-fights:
@@ -49,13 +49,8 @@ services:
       VILLAINS_BASE_URL: http://rest-villains:8000
       LOCATIONS_BASE_URL: http://grpc-locations:50051
       FIGHTS_DATABASE_URL: sqlite:///data/fights/fights.db
-    volumes:
-      - fights-db:/data/fights
+    tmpfs:
+      - /data/fights
     ports:
       - "8082:8082"
 
-volumes:
-  heroes-db:
-  villains-db:
-  locations-db:
-  fights-db:
