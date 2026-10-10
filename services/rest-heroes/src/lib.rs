@@ -77,9 +77,10 @@ async fn seed_with_nextval(pool: &Pool<Sqlite>, seed_sql: &str, sequence_name: &
     }
 }
 
-pub async fn query_random_hero(heroes_state: HeroesState) -> Option<SqlHero> {
+pub async fn query_random_hero(heroes_state: &HeroesState) -> Option<SqlHero> {
     query_as("select * from Hero order by random() limit 1")
         .fetch_optional(&*heroes_state.pool)
         .await
         .unwrap()
 }
+

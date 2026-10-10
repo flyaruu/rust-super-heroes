@@ -3,9 +3,9 @@ use std::{env, str::FromStr, sync::Arc};
 use axum::{Json, extract::State};
 use log::info;
 use rest_heroes::HeroesState;
-use rest_villains::VillainState;
+use rest_villains::{VillainState, query_random_villain};
 use sqlx::{
-    Pool, Sqlite, query_as,
+    Pool, Sqlite,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
 };
 use superhero_types::{
@@ -155,17 +155,13 @@ pub async fn random_fighters(State(fight_state): State<FightsState>) -> Json<Fig
 }
 
 async fn random_hero(heroes_state: &HeroesState) -> SqlHero {
-    query_as("select * from Hero order by random() limit 1")
-        .fetch_one(&*heroes_state.pool)
-        .await
-        .unwrap()
+    rest_heroes::query_random_hero(heroes_state).await.unwrap()
 }
 
 async fn random_villain(villains_state: &VillainState) -> SqlVillain {
-    query_as("select * from villain order by random() limit 1")
-        .fetch_one(&*villains_state.pool)
+    query_random_villain(villains_state.clone())
         .await
-        .unwrap()
+        .expect("villains database is empty")
 }
 
 #[cfg(test)]

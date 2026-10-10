@@ -55,7 +55,7 @@ async fn hero(
 async fn random_hero(
     State(heroes_state): State<HeroesState>,
 ) -> (StatusCode, Json<Option<SqlHero>>) {
-    let hero = query_random_hero(heroes_state).await;
+    let hero = query_random_hero(&heroes_state).await;
     if let Some(hero) = hero {
         (StatusCode::OK, Json(Some(hero)))
     } else {

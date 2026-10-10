@@ -59,15 +59,19 @@ pub async fn villain(
 pub async fn random_villain(
     State(villain_state): State<VillainState>,
 ) -> (StatusCode, Json<Option<SqlVillain>>) {
-    let villain: Option<SqlVillain> = query_as("select * from villain order by random() limit 1")
-        .fetch_optional(&*villain_state.pool)
-        .await
-        .unwrap();
+    let villain = query_random_villain(villain_state).await;
     if let Some(villain) = villain {
         (StatusCode::OK, Json(Some(villain)))
     } else {
         (StatusCode::NOT_FOUND, Json(None))
     }
+}
+
+pub async fn query_random_villain(villain_state: VillainState) -> Option<SqlVillain> {
+    query_as("select * from villain order by random() limit 1")
+        .fetch_optional(&*villain_state.pool)
+        .await
+        .unwrap()
 }
 
 pub async fn all_villains(State(villain_state): State<VillainState>) -> Json<Vec<SqlVillain>> {
@@ -78,7 +82,6 @@ pub async fn all_villains(State(villain_state): State<VillainState>) -> Json<Vec
             .unwrap(),
     )
 }
-
 
 async fn initialize_villains(pool: &Pool<Sqlite>) {
     sqlx::raw_sql(
